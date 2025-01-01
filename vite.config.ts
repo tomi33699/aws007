@@ -1,16 +1,37 @@
-import { fileURLToPath, URL } from 'node:url'
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import polyfillNode from 'rollup-plugin-polyfill-node';
 
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': '/src' // Egyszerű alias beállítás
+    },
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      define: {
+        'process.env': '{}', // Üres process.env
+        global: 'window',   // Node.js global változó helyettesítése
+      },
+    },
+  },
+  build: {
+    rollupOptions: {
+      plugins: [
+        polyfillNode(), // Polyfill a Node.js modulokra
+      ],
+    },
+    commonjsOptions: {
+      transformMixedEsModules: true, // Mixed ES/CJS modulok támogatása
+    },
+  },
+  server: {
+    fs: {
+      allow: ['.'] // Fájl elérésének engedélyezése
     }
   }
-})
+});
