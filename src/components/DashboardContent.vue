@@ -1,5 +1,9 @@
 <!-- DashboardContent.vue -->
 <script setup lang="ts">
+import BukkChart from "./BukkChart.vue"; 
+import CardComponent from './CardComponent.vue';
+
+
 import { Line } from 'vue-chartjs';
 import {
   Chart as ChartJS,
@@ -51,66 +55,10 @@ const chartOptions = {
 <template>
   <section class="content">
     <h1>{{ props.activeMenu }}</h1>
-
     <div v-if="props.activeMenu === 'Főoldal'">
-      <div class="cards">
-        <div class="card">
-          <div class="card-content">
-            <div class="card-text">
-              <span class="card-title">Termelés</span>
-              <span class="card-value">1000 kW</span>
-            </div>
-            <span class="material-icons card-icon">bolt</span>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-content">
-            <div class="card-text">
-              <span class="card-title">Fogyasztás</span>
-              <span class="card-value">800 kW</span>
-            </div>
-            <span class="material-icons card-icon">flash_on</span>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-content">
-            <div class="card-text">
-              <span class="card-title">Tartalék</span>
-              <span class="card-value">200 kW</span>
-            </div>
-            <span class="material-icons card-icon">inventory</span>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-content">
-            <div class="card-text">
-              <span class="card-title">Import</span>
-              <span class="card-value">500 kW</span>
-            </div>
-            <span class="material-icons card-icon">arrow_upward</span>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-content">
-            <div class="card-text">
-              <span class="card-title">Export</span>
-              <span class="card-value">300 kW</span>
-            </div>
-            <span class="material-icons card-icon">arrow_downward</span>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-content">
-            <div class="card-text">
-              <span class="card-title">Egyenleg</span>
-              <span class="card-value">+200 kW</span>
-            </div>
-            <span class="material-icons card-icon">assessment</span>
-          </div>
-        </div>
-      </div>
+      <CardComponent />
       <div class="chart-container">
-        <Line :data="chartData" :options="chartOptions" />
+        <BukkChart />
       </div>
     </div>
   </section>
