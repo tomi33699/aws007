@@ -97,6 +97,7 @@ body {
   width: 100%;
 }
 
+
 /* Testreszabott gombok */
 .amplify-button {
   background-color: #007bff;

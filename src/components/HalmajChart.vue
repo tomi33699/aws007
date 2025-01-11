@@ -12,7 +12,7 @@ import {
   CategoryScale,
 } from "chart.js";
 import type { ChartOptions } from "chart.js";
-import { getBukkData } from "../apiService";
+import { getHalmajData } from "../apiService"; // Halmaj API
 
 ChartJS.register(
   Title,
@@ -72,25 +72,28 @@ const chartOptions: ChartOptions<"line"> = {
 };
 
 // API adatok lekérése
-async function fetchBukkData() {
+async function fetchHalmajData() {
   try {
-    const data = await getBukkData(selectedDate.value);
+    const data = await getHalmajData(); // Halmaj API hívás
 
     if (Array.isArray(data) && data.length > 0) {
-
+      // Csak a kiválasztott nap adatait szűrjük
       const filteredData = data.filter((item) =>
-        item.time.startsWith(selectedDate.value)
+        item.timestamp.startsWith(selectedDate.value)
       );
 
+      // Időbélyegek formázása hh:mm formátumra
       const labels = filteredData.map((item) =>
-        new Date(item.time).toLocaleTimeString("hu-HU", {
+        new Date(item.timestamp).toLocaleTimeString("hu-HU", {
           hour: "2-digit",
           minute: "2-digit",
         })
       );
 
-      const powerData = filteredData.map((item) => item.powerp * -1);
-      const irradData = filteredData.map((item) => item.irrad || 0);
+      // Termelési és besugárzási adatok
+      const powerData = filteredData.map((item) => item.power_output || 0);
+      const radiationData = filteredData.map((item) => item.total_radiation || 0);
+
       chartData.value = {
         labels,
         datasets: [
@@ -104,7 +107,7 @@ async function fetchBukkData() {
           },
           {
             label: "Besugárzás (W/m^2)",
-            data: irradData,
+            data: radiationData,
             borderColor: "#FF7043",
             backgroundColor: "#FFCCBC",
             fill: false,
@@ -125,13 +128,13 @@ async function fetchBukkData() {
 }
 
 // Figyelés a dátumváltozásra
-onMounted(fetchBukkData);
-watch(selectedDate, fetchBukkData);
+onMounted(fetchHalmajData);
+watch(selectedDate, fetchHalmajData);
 </script>
 
 <template>
-  <section class="bukk-chart-container">
-    <h2>Bükkábrány termelés</h2>
+  <section class="halmaj-chart-container">
+    <h2>Halmajugra Termelés</h2>
     <div class="date-picker-container">
       <input
         type="date"
@@ -145,7 +148,7 @@ watch(selectedDate, fetchBukkData);
 </template>
 
 <style scoped>
-.bukk-chart-container {
+.halmaj-chart-container {
   padding: 0em;
   background: white;
   border-radius: 8px;
@@ -154,9 +157,7 @@ watch(selectedDate, fetchBukkData);
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-height: 400px; /* Max magasság csökkentve */
-
-
+  max-height: 400px;
 }
 
 .date-picker-container {

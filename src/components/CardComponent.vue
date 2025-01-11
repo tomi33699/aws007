@@ -166,7 +166,7 @@ onMounted(fetchData);
     <div class="card">
       <div class="card-content">
         <div class="card-text">
-          <span class="card-title">Aktuális Termelés (Frissítve: {{ production.lastUpdate }})</span>
+          <span class="card-title">Aktuális termelés <span class="card-title-span">(Frissítve: {{ production.lastUpdate }})</span></span>
           <span class="card-value">{{ production.value }}</span>
         </div>
         <span class="material-icons card-icon">bolt</span>
@@ -175,7 +175,7 @@ onMounted(fetchData);
     <div class="card">
       <div class="card-content">
         <div class="card-text">
-          <span class="card-title">Aktuális Besugárzás (Frissítve: {{ irradiation.lastUpdate }})</span>
+          <span class="card-title">Aktuális besugárzás <span class="card-title-span">(Frissítve: {{ irradiation.lastUpdate }})</span></span>
           <span class="card-value">{{ irradiation.value }}</span>
         </div>
         <span class="material-icons card-icon">flash_on</span>
@@ -184,7 +184,7 @@ onMounted(fetchData);
     <div class="card">
       <div class="card-content">
         <div class="card-text">
-          <span class="card-title">HUPX Átlagár (Dátum: {{ hupxAverage.lastUpdate }})</span>
+          <span class="card-title">HUPX átlagár  <span class="card-title-span">(Dátum: {{ hupxAverage.lastUpdate }})</span></span>
           <span class="card-value">{{ hupxAverage.value }}</span>
         </div>
         <span class="material-icons card-icon">trending_up</span>
@@ -193,7 +193,7 @@ onMounted(fetchData);
     <div class="card">
       <div class="card-content">
         <div class="card-text">
-          <span class="card-title">Balancing Prices (Frissítve: {{ balancingPrices.lastUpdate }})</span>
+          <span class="card-title">Szabályozás árak  <span class="card-title-span">(Frissítve: {{ balancingPrices.lastUpdate }})</span></span>
           <span class="card-value">⬆ {{ balancingPrices.upPrice }} | ⬇ {{ balancingPrices.downPrice }}</span>
         </div>
         <span class="material-icons card-icon">compare_arrows</span>
@@ -202,7 +202,7 @@ onMounted(fetchData);
     <div class="card">
       <div class="card-content">
         <div class="card-text">
-          <span class="card-title">Balancing Volumes (Frissítve: {{ balancingVolumes.lastUpdate }})</span>
+          <span class="card-title">Szabályozás mennyiség  <span class="card-title-span">(Frissítve: {{ balancingVolumes.lastUpdate }})</span></span>
           <span class="card-value">⬆ {{ balancingVolumes.upVolume }} | ⬇ {{ balancingVolumes.downVolume }}</span>
         </div>
         <span class="material-icons card-icon">equalizer</span>
@@ -211,8 +211,8 @@ onMounted(fetchData);
     <div class="card">
       <div class="card-content">
         <div class="card-text">
-          <span class="card-title">Load (Frissítve: {{ load.lastUpdate }})</span>
-          <span class="card-value">Actual: {{ load.actual }} | Forecast: {{ load.forecast }}</span>
+          <span class="card-title">Rendszerterhelés  <span class="card-title-span">(Frissítve: {{ load.lastUpdate }})</span></span>
+          <span class="card-value">A: {{ load.actual }} | F: {{ load.forecast }}</span>
         </div>
         <span class="material-icons card-icon">show_chart</span>
       </div>
@@ -256,13 +256,22 @@ onMounted(fetchData);
   margin-bottom: 5px;
 }
 
+.card-title-span{
+  font-size: .8em;
+}
+
 .card-value {
-  font-size: 1.2em;
   font-weight: bold;
 }
 
 .card-icon {
   font-size: 2em;
-  color: #34495e;
+  color: #41B883;
+}
+
+.material-icons{
+  background-color: #2C3E50;
+  border-radius: 5px;
+  padding: .2em;
 }
 </style>

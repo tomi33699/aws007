@@ -46,7 +46,7 @@ function toggleSidebar() {
 
 <style scoped>
 .sidebar {
-  width: 250px;
+  width: 15em;
   background-color: #2c3e50;
   color: white;
   display: flex;

@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import BukkChart from "./BukkChart.vue"; 
 import CardComponent from './CardComponent.vue';
-
+import SolarDashboard from './SolarDashboard.vue';
 
 import { Line } from 'vue-chartjs';
 import {
@@ -16,6 +16,8 @@ import {
   CategoryScale
 } from 'chart.js';
 import 'material-icons/iconfont/material-icons.css';
+import HalmajChart from "./HalmajChart.vue";
+
 
 ChartJS.register(
   Title,
@@ -54,11 +56,15 @@ const chartOptions = {
 
 <template>
   <section class="content">
-    <h1>{{ props.activeMenu }}</h1>
+    
     <div v-if="props.activeMenu === 'Főoldal'">
+      <SolarDashboard />
       <CardComponent />
       <div class="chart-container">
         <BukkChart />
+      </div>
+      <div class="chart-container">
+        <HalmajChart />
       </div>
     </div>
   </section>
@@ -67,8 +73,8 @@ const chartOptions = {
 <style scoped>
 .content {
   flex-grow: 1;
-  padding: 20px;
-  background: linear-gradient(180deg, #ecf0f1, #a29bfe);
+  padding: 1em;
+  background: #d7d7d7;
   overflow-y: auto;
 }
 
@@ -76,11 +82,11 @@ const chartOptions = {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 1em;
 }
 
 .card {
-  padding: 20px;
+  padding: 1em;
   background: white;
   border-radius: 5px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -103,23 +109,23 @@ const chartOptions = {
 }
 
 .card-title {
-  font-weight: bold;
+
   margin-bottom: 5px;
 }
 
 .card-value {
-  font-size: 1.2em;
+
   font-weight: bold;
 }
 
 .card-icon {
-  font-size: 2em;
+  font-size: 1em;
   color: #34495e;
 }
 
 .chart-container {
   background: white;
-  padding: 20px;
+  margin: 1em 0;
   border-radius: 5px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
