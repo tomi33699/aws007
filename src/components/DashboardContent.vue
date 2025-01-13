@@ -1,6 +1,6 @@
 <!-- DashboardContent.vue -->
 <script setup lang="ts">
-import BukkChart from "./BukkChart.vue"; 
+import BukkChart from "./BukkChart.vue";
 import CardComponent from './CardComponent.vue';
 import SolarDashboard from './SolarDashboard.vue';
 
@@ -17,6 +17,8 @@ import {
 } from 'chart.js';
 import 'material-icons/iconfont/material-icons.css';
 import HalmajChart from "./HalmajChart.vue";
+import MixedChart from "./MixedChart.vue";
+import HupxCalendar from "./HupxCalendar.vue";
 
 
 ChartJS.register(
@@ -56,16 +58,22 @@ const chartOptions = {
 
 <template>
   <section class="content">
-    
+
     <div v-if="props.activeMenu === 'Főoldal'">
       <SolarDashboard />
       <CardComponent />
+      <div class="chart-container">
+        <MixedChart />
+      </div>
       <div class="chart-container">
         <BukkChart />
       </div>
       <div class="chart-container">
         <HalmajChart />
       </div>
+    </div>
+    <div v-if="props.activeMenu === 'Hupx'">
+      <HupxCalendar />
     </div>
   </section>
 </template>

@@ -1,6 +1,5 @@
-<!-- App.vue -->
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted } from "vue";
 import Sidebar from './components/Sidebar.vue';
 import DashboardContent from './components/DashboardContent.vue';
 import { Authenticator } from "@aws-amplify/ui-vue";
@@ -11,8 +10,8 @@ import { I18n } from '@aws-amplify/core';
 onMounted(() => {
   I18n.putVocabularies({
     hu: {
-      'Sign in': 'Belépés', // Kisbetűs kulcs
-      'Sign In': 'Bejelentkezés', // Nagybetűs kulcs
+      'Sign in': 'Belépés',
+      'Sign In': 'Bejelentkezés',
       'Sign Up': 'Fiók létrehozása',
       'Email': 'E-mail',
       'Password': 'Jelszó',
@@ -27,44 +26,38 @@ onMounted(() => {
       'Enter your Password': 'Adja meg a jelszavát',
       'Please confirm your Password': 'Erősítse meg a jelszavát',
       'Resend Code': 'Kód újraküldése',
-      'Confirmation Code': 'Megerősítő kód'
-    }
+      'Confirmation Code': 'Megerősítő kód',
+    },
   });
 
-  I18n.setLanguage('hu'); // Nyelv beállítása magyarra
+  I18n.setLanguage('hu');
 });
 
-// Aktív menü
-const activeMenu = ref('Főoldal');
+// Aktív menü inicializálása localStorage segítségével
+const activeMenu = ref(localStorage.getItem("activeMenu") || "Főoldal");
 
-// Menü választás
 function selectMenu(menu: string) {
   activeMenu.value = menu;
+  localStorage.setItem("activeMenu", menu); // Aktív menü mentése
 }
 </script>
 
 <template>
   <main class="app-container">
-    <!-- AWS Amplify Authenticator -->
     <authenticator :hide-sign-up="true">
       <template v-slot:header>
-        <!-- Egyedi fejléc -->
         <div class="login-header">
           <img src="@/assets/logo.svg" alt="EforceApp Logo" class="logo" />
           <h1 class="app-name">EforceApp</h1>
         </div>
       </template>
-
-      <!-- Dashboard elrendezés -->
       <template v-slot="{ signOut }">
         <div class="dashboard-container">
-          <!-- Oldalsáv -->
           <Sidebar 
             :activeMenu="activeMenu" 
             @selectMenu="selectMenu" 
             @signOut="signOut" 
           />
-          <!-- Tartalom -->
           <DashboardContent :activeMenu="activeMenu" />
         </div>
       </template>
@@ -72,16 +65,13 @@ function selectMenu(menu: string) {
   </main>
 </template>
 
-
 <style scoped>
-/* Globális stílusok */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background-color: #f0f0f0; /* Szürke háttér */
+  background-color: #f0f0f0;
 }
 
-/* Amplify UI container (középre igazítás) */
 .app-container {
   height: 100vh;
   display: flex;
@@ -90,15 +80,12 @@ body {
   background-color: #f0f0f0;
 }
 
-/* Dashboard elrendezés */
 .dashboard-container {
   display: flex;
   height: 100vh;
   width: 100%;
 }
 
-
-/* Testreszabott gombok */
 .amplify-button {
   background-color: #007bff;
   color: white;
@@ -109,14 +96,14 @@ body {
 .amplify-button:hover {
   background-color: #0056b3;
 }
-/* Logó és app név */
+
 .login-header {
   text-align: center;
   margin-bottom: 20px;
 }
 
 .logo {
-  width: 100px; /* Logó mérete */
+  width: 100px;
   margin-bottom: 10px;
 }
 

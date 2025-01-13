@@ -1,10 +1,9 @@
-<!-- Sidebar.vue -->
 <script setup lang="ts">
-import { ref } from 'vue';
-import { defineProps, defineEmits } from 'vue';
+import { ref } from "vue";
+import { defineProps, defineEmits } from "vue";
 
-const props = defineProps(['activeMenu']);
-const emit = defineEmits(['selectMenu', 'signOut']);
+const props = defineProps(["activeMenu"]);
+const emit = defineEmits(["selectMenu", "signOut"]);
 const isCollapsed = ref(false);
 
 function toggleSidebar() {
