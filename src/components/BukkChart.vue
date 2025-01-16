@@ -1,170 +1,182 @@
-<script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
-import { Line } from "vue-chartjs";
-import {
-  Chart as ChartJS,
-  Title,
-  Tooltip,
-  Legend,
-  LineElement,
-  PointElement,
-  LinearScale,
-  CategoryScale,
-} from "chart.js";
-import type { ChartOptions } from "chart.js";
-import { getBukkData } from "../apiService";
-
-ChartJS.register(
-  Title,
-  Tooltip,
-  Legend,
-  LineElement,
-  PointElement,
-  LinearScale,
-  CategoryScale
-);
-
-// Kijelölt dátum
-const selectedDate = ref(new Date().toISOString().split("T")[0]);
-
-// Csak az elmúlt 3 nap engedélyezése
-const minDate = ref(new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]);
-const maxDate = ref(new Date().toISOString().split("T")[0]);
-
-// Chart adatok
-const chartData = ref({
-  labels: [] as string[],
-  datasets: [] as any[],
-});
-
-const chartOptions: ChartOptions<"line"> = {
-  responsive: true,
-  plugins: {
-    legend: {
-      display: true,
-    },
-  },
-  scales: {
-    y1: {
-      type: "linear",
-      position: "left",
-      title: {
-        display: true,
-      },
-    },
-    y2: {
-      type: "linear",
-      position: "right",
-      grid: {
-        drawOnChartArea: false, // Ez megakadályozza az átfedést
-      },
-      title: {
-        display: true,
-      },
-    },
-    x: {
-      type: "category",
-      title: {
-        display: true,
-      },
-    },
-  },
-};
-
-// API adatok lekérése
-async function fetchBukkData() {
-  try {
-    const data = await getBukkData(selectedDate.value);
-
-    if (Array.isArray(data) && data.length > 0) {
-
-      const filteredData = data.filter((item) =>
-        item.time.startsWith(selectedDate.value)
-      );
-
-      const labels = filteredData.map((item) =>
-        new Date(item.time).toLocaleTimeString("hu-HU", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      );
-
-      const powerData = filteredData.map((item) => item.powerp * -1);
-      const irradData = filteredData.map((item) => item.irrad || 0);
-      chartData.value = {
-        labels,
-        datasets: [
-          {
-            label: "Teljesítmény (kW)",
-            data: powerData,
-            borderColor: "#42A5F5",
-            backgroundColor: "#90CAF9",
-            fill: false,
-            yAxisID: "y1",
-          },
-          {
-            label: "Besugárzás (W/m^2)",
-            data: irradData,
-            borderColor: "#FF7043",
-            backgroundColor: "#FFCCBC",
-            fill: false,
-            yAxisID: "y2",
-          },
-        ],
-      };
-    } else {
-      console.warn("Az API nem adott vissza adatokat a kiválasztott dátumra.");
-      chartData.value = {
-        labels: [],
-        datasets: [],
-      };
-    }
-  } catch (error) {
-    console.error("Hiba történt az adatok lekérésekor:", error);
-  }
-}
-
-// Figyelés a dátumváltozásra
-onMounted(fetchBukkData);
-watch(selectedDate, fetchBukkData);
-</script>
-
 <template>
-  <section class="bukk-chart-container">
-    <h2>Bükkábrány termelés</h2>
-    <div class="date-picker-container">
+    <div class="chart-view">
+      <h2>Bükk Chart</h2>
+      <label for="date-picker-bukk">Choose a date for Bükk:</label>
       <input
+        id="date-picker-bukk"
         type="date"
         v-model="selectedDate"
-        :min="minDate"
-        :max="maxDate"
+        @change="handleDateChange"
       />
+      <div v-if="isLoading" class="loading-overlay">
+        <span class="loader"></span>
+      </div>
+      <apexchart
+        v-if="!isLoading && chartData.length > 0"
+        type="line"
+        height="400"
+        :options="chartOptions"
+        :series="chartData"
+      />
+      <div v-else-if="!isLoading && chartData.length === 0">
+        <p>No data available for the selected date.</p>
+      </div>
     </div>
-    <Line :data="chartData" :options="chartOptions" />
-  </section>
-</template>
-
-<style scoped>
-.bukk-chart-container {
-  padding: 0em;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-top: 1em;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-height: 400px; /* Max magasság csökkentve */
-
-
-}
-
-.date-picker-container {
-  margin-bottom: 10px;
-}
-
-
-canvas {
-  max-height: 300px; /* Chart magasság korlátozása */
-}
-</style>
+  </template>
+  
+  
+  <script>
+  import { ref, onMounted } from "vue";
+  import VueApexCharts from "vue3-apexcharts";
+  import { fetchBukkData } from "@/services/apiService";
+  
+  export default {
+    components: {
+      apexchart: VueApexCharts,
+    },
+    setup() {
+      const selectedDate = ref(new Date().toISOString().split("T")[0]); // Default to today
+      const chartData = ref([]);
+      const isLoading = ref(false);
+  
+      const chartOptions = ref({
+        chart: {
+          type: "line",
+          zoom: { enabled: false },
+          animations: {
+            enabled: true,
+            easing: "easeinout",
+            speed: 500,
+          },
+        },
+        xaxis: {
+          type: "datetime",
+          categories: [],
+          labels: {
+            formatter: (value) => {
+              const date = new Date(value);
+              return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            },
+          },
+        },
+        yaxis: [
+          {
+            title: { text: "" },
+          },
+          {
+            opposite: true,
+            title: { text: "" },
+          },
+        ],
+        tooltip: {
+          shared: true,
+          intersect: false,
+        },
+      });
+  
+      const fetchBukkDataForDate = async () => {
+        isLoading.value = true;
+        try {
+          const response = await fetchBukkData(selectedDate.value);
+          if (!response || response.length === 0) {
+            chartData.value = [];
+            return;
+          }
+  
+          chartData.value = [
+            {
+              name: "Real PowerP",
+              type: "line",
+              color: "#5B51BF", // Termelés színe
+              data: response.map((item) => ({
+                x: new Date(item.bucket).getTime(),
+                y: parseFloat((-1 * item.real_powerp).toFixed(2)),
+              })),
+            },
+            {
+              name: "Avg Irrad",
+              type: "line",
+              color: "#FAC107", // Irradiáció színe
+              data: response.map((item) => ({
+                x: new Date(item.bucket).getTime(),
+                y: parseFloat(item.avg_irrad.toFixed(2)),
+              })),
+            },
+          ];
+        } catch (error) {
+          console.error("Error fetching Bükk data:", error);
+        } finally {
+          isLoading.value = false;
+        }
+      };
+  
+      onMounted(fetchBukkDataForDate);
+  
+      return {
+        selectedDate,
+        chartData,
+        chartOptions,
+        isLoading,
+        handleDateChange: fetchBukkDataForDate,
+      };
+    },
+  };
+  </script>
+  
+  <style scoped>
+  .chart-view {
+    padding: 1em;
+    position: relative;
+    background-color: #ffffff;
+    border-radius: 10px;
+    min-height: 30em;
+    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  h2 {
+    margin-bottom: 1em;
+    color: #333333;
+  }
+  
+  label {
+    margin-right: 10px;
+  }
+  
+  input[type="date"] {
+    margin-bottom: 20px;
+    padding: 5px;
+    font-size: 16px;
+  }
+  
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 10;
+  }
+  
+  .loader {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  </style>
+  

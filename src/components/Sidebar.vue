@@ -1,115 +1,164 @@
-<script setup lang="ts">
-import { ref } from "vue";
-import { defineProps, defineEmits } from "vue";
+<template>
+  <div class="sidebar" :class="{ collapsed: isSidebarCollapsed }">
+    <div class="logo-container" @click="toggleSidebar">
+      <i class="logo-icon fa fa-bolt"></i>
+      <h2 v-if="!isSidebarCollapsed" class="logo-text">EnergyForce</h2>
+    </div>
+    <ul class="menu">
+      <li v-for="menu in menus" :key="menu.path" class="menu-items">
+        <router-link :to="menu.path" active-class="active">
+          <i :class="['fa', menu.icon]"></i>
+          <span v-if="!isSidebarCollapsed">{{ menu.label }}</span>
+        </router-link>
+      </li>
+    </ul>
+    <button class="sign-out-button" @click="signOut">
+      <span v-if="!isSidebarCollapsed">Kijelentkezés</span>
+    </button>
+  </div>
+</template>
 
-const props = defineProps(["activeMenu"]);
-const emit = defineEmits(["selectMenu", "signOut"]);
-const isCollapsed = ref(false);
+<script setup>
+import { ref, defineEmits } from "vue";
+
+const menus = ref([
+  { label: "Dashboard", path: "/", icon: "fa-tachometer-alt" },
+  { label: "Bükk", path: "/bukk", icon: "fa-cogs" },
+  { label: "Halmaj", path: "/halmaj", icon: "fa-cogs" },
+  { label: "Charts", path: "/charts", icon: "fa-chart-line" },
+  /* { label: "Balancing", path: "/balancing", icon: "fa-balance-scale" },
+  { label: "HUPX", path: "/hupx", icon: "fa-plug" },
+  { label: "Load", path: "/load", icon: "fa-tachometer-alt" },
+  { label: "Forecast", path: "/forecast", icon: "fa-calendar" }, */
+]);
+
+const isSidebarCollapsed = ref(false);
+const emit = defineEmits(["sidebarToggle"]);
 
 function toggleSidebar() {
-  isCollapsed.value = !isCollapsed.value;
+  isSidebarCollapsed.value = !isSidebarCollapsed.value;
+  emit("sidebarToggle", isSidebarCollapsed.value);
 }
-</script>
 
-<template>
-  <aside :class="['sidebar', { collapsed: isCollapsed }]">
-    <div class="logo" @click="toggleSidebar">
-      <img src="@/assets/logo.svg" alt="Logó" class="logo-img" />
-    </div>
-    <div v-if="!isCollapsed" class="app-name">EforceApp</div>
-    <nav>
-      <ul>
-        <li @click="emit('selectMenu', 'Főoldal')" :class="{ active: props.activeMenu === 'Főoldal' }">
-          <span class="material-icons icon">home</span>
-          <span v-if="!isCollapsed">Főoldal</span>
-        </li>
-        <li @click="emit('selectMenu', 'Hupx')" :class="{ active: props.activeMenu === 'Hupx' }">
-          <span class="material-icons icon">trending_up</span>
-          <span v-if="!isCollapsed">Hupx</span>
-        </li>
-        <li @click="emit('selectMenu', 'Termelés')" :class="{ active: props.activeMenu === 'Termelés' }">
-          <span class="material-icons icon">bolt</span>
-          <span v-if="!isCollapsed">Termelés</span>
-        </li>
-        <li @click="emit('selectMenu', 'Szabályozás')" :class="{ active: props.activeMenu === 'Szabályozás' }">
-          <span class="material-icons icon">build</span>
-          <span v-if="!isCollapsed">Szabályozás</span>
-        </li>
-      </ul>
-    </nav>
-    <div class="logout">
-      <button @click="emit('signOut')">Kijelentkezés</button>
-    </div>
-  </aside>
-</template>
+defineProps(["signOut"]);
+</script>
 
 <style scoped>
 .sidebar {
-  width: 15em;
-  background-color: #2c3e50;
+  background-color: #4b42ab;
   color: white;
+  width: 15vw; /* Alapértelmezett szélesség */
   display: flex;
   flex-direction: column;
-  padding: 10px;
+  justify-content: space-between;
+  padding: 1vh 0.8vw;
+  transition: width 0.5s ease; /* Csak a szélesség animálása */
+  overflow: hidden;
 }
 
-.collapsed {
-  width: 80px;
+.sidebar.collapsed {
+  width: 7vw; /* Az összecsukott állapot szélessége */
+}
+
+.logo-container {
+  margin: 1em 0;
+  display: flex;
+  gap: 1em;
+  flex-direction: column;
+  text-align: center;
+  cursor: pointer; /* Mutatóváltás jelzi a kattinthatóságot */
+}
+
+.logo-container i{
+  font-size: 2em;
 }
 
 .logo {
-  text-align: center;
-  cursor: pointer;
+  width: 80%;
+  transition: 0.3s ease;
+  margin-bottom: 0em;
+  padding-top: 1em;
 }
 
-.logo-img {
-  width: 40px;
-  height: 40px;
+.logo-icon{
+  color: #fac107e5;
 }
 
-.app-name {
-  text-align: center;
-  font-size: 1.2em;
-  font-weight: bold;
-  margin: 10px 0;
-}
-
-nav ul {
+.menu {
   list-style: none;
   padding: 0;
+  margin-bottom: auto;
+  margin-top: 5em;
 }
 
-nav li {
-  padding: 10px;
-  cursor: pointer;
+.menu-items {
+  text-decoration: none;
+  width: max-content;
+  padding: 1em;
+  width: 100%;
+  border-radius: 4px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between; /* Középre igazítja az ikonokat */
+  border-bottom: 1px solid #fbf5f3;
 }
 
-nav li:hover, .active {
-  background-color: #34495e;
+.menu-items.active {
+  background-color: #c8dfe7;
+  border-radius: 5px;
 }
 
-.logout {
-  margin-top: auto;
-  text-align: center;
+.menu-items i {
+  margin-right: 1vw; /* Rugalmas méretezés */
+  color: #fac107e5;
 }
 
-button {
-  background-color: #e74c3c;
-  color: white;
-  padding: 10px 20px;
+.menu-items span {
+  transition: 0.2s;
+  color: #fbf5f3;
+  font-weight: bold;
+}
+
+.menu-items span:hover {
+  color: #FAC107; 
+}
+
+li {
+  width: max-content;
+}
+
+.sign-out-button {
+  background-color: #fac107e5 ;
+  color: rgb(16, 15, 15);
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  padding: 1em 2vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: .2s;
 }
 
-button:hover {
-  background-color: #c0392b;
+.sign-out-button span {
+  display: inline-block;
 }
 
-.icon {
-  font-size: 1.2em;
+.sign-out-button:hover {
+  background-color: black;
+  color: #c8dfe7;
+}
+
+a {
+  text-decoration: none;
+}
+
+.sidebar.collapsed .menu-items span,
+.sidebar.collapsed .sign-out-button span {
+  display: none;
+}
+
+.sidebar.collapsed .menu-items {
+  justify-content: center; /* Középre igazítja az ikonokat */
 }
 </style>

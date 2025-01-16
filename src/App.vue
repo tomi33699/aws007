@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import Sidebar from './components/Sidebar.vue';
-import DashboardContent from './components/DashboardContent.vue';
 import { Authenticator } from "@aws-amplify/ui-vue";
 import "@aws-amplify/ui-vue/styles.css";
 import { I18n } from '@aws-amplify/core';
@@ -32,14 +31,6 @@ onMounted(() => {
 
   I18n.setLanguage('hu');
 });
-
-// Aktív menü inicializálása localStorage segítségével
-const activeMenu = ref(localStorage.getItem("activeMenu") || "Főoldal");
-
-function selectMenu(menu: string) {
-  activeMenu.value = menu;
-  localStorage.setItem("activeMenu", menu); // Aktív menü mentése
-}
 </script>
 
 <template>
@@ -53,22 +44,17 @@ function selectMenu(menu: string) {
       </template>
       <template v-slot="{ signOut }">
         <div class="dashboard-container">
-          <Sidebar 
-            :activeMenu="activeMenu" 
-            @selectMenu="selectMenu" 
-            @signOut="signOut" 
-          />
-          <DashboardContent :activeMenu="activeMenu" />
+          <Sidebar :signOut="signOut" />
+          <router-view /> <!-- Fontos -->
         </div>
       </template>
     </authenticator>
   </main>
 </template>
-
 <style scoped>
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Roboto', sans-serif;
   background-color: #f0f0f0;
 }
 
@@ -110,6 +96,6 @@ body {
 .app-name {
   font-size: 1.5em;
   font-weight: bold;
-  color: #005566;
+  color: #5b757b;
 }
 </style>

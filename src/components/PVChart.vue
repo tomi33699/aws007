@@ -1,9 +1,9 @@
 <template>
     <div class="chart-view">
-      <h2>Halmaj Chart</h2>
-      <label for="date-picker-halmaj">Choose a date for Halmaj:</label>
+      <h2>PV Chart</h2>
+      <label for="date-picker-pv">Choose a date:</label>
       <input
-        id="date-picker-halmaj"
+        id="date-picker-pv"
         type="date"
         v-model="selectedDate"
         @change="handleDateChange"
@@ -27,7 +27,7 @@
   <script>
   import { ref, onMounted } from "vue";
   import VueApexCharts from "vue3-apexcharts";
-  import { fetchHalmajData } from "@/services/apiService";
+  import { fetchHalmajData, fetchBukkData } from "@/services/apiService";
 
   export default {
     components: {
@@ -60,14 +60,15 @@
         },
         yaxis: [
           {
-            title: { text: "" },
+            title: { text: "Sum Real PowerP (kW)" },
             labels: {
               formatter: (value) => `${value} kW`,
             },
           },
           {
+            
             opposite: true,
-            title: { text: "" },
+            title: { text: "Sum Avg Irrad (kW/m²)" },
             labels: {
               formatter: (value) => `${value} kW/m²`,
             },
@@ -86,51 +87,63 @@
         },
       });
 
-      const fetchHalmajDataForDate = async () => {
+      const fetchPVDataForDate = async () => {
         isLoading.value = true;
         try {
-          const response = await fetchHalmajData(selectedDate.value);
+          const [halmajResponse, bukkResponse] = await Promise.all([
+            fetchHalmajData(selectedDate.value),
+            fetchBukkData(selectedDate.value),
+          ]);
 
-          if (!response || response.length === 0) {
+          if ((!halmajResponse || halmajResponse.length === 0) && (!bukkResponse || bukkResponse.length === 0)) {
             console.warn("No data found for the selected date.");
             chartData.value = [];
           } else {
+            const summedData = halmajResponse.map((halmajItem, index) => {
+              const bukkItem = bukkResponse[index] || { real_powerp: 0, avg_irrad: 0 };
+              return {
+                bucket: halmajItem.bucket,
+                sum_real_powerp: parseFloat((halmajItem.real_powerp + bukkItem.real_powerp * -1).toFixed(2)),
+                sum_avg_irrad: parseFloat((halmajItem.avg_irrad + bukkItem.avg_irrad).toFixed(2)),
+              };
+            });
+
             chartData.value = [
               {
-                name: "Real PowerP",
+                name: "Sum Real PowerP",
                 type: "line",
                 color: "#5B51BF", // Termelés színe
-                data: response.map((item) => ({
+                data: summedData.map((item) => ({
                   x: new Date(item.bucket).getTime(),
-                  y: parseFloat(item.real_powerp.toFixed(2)),
+                  y: item.sum_real_powerp,
                 })),
               },
               {
-                name: "Avg Irrad",
+                name: "Sum Avg Irrad",
                 type: "line",
                 color: "#FAC107", // Irradiáció színe
-                data: response.map((item) => ({
+                data: summedData.map((item) => ({
                   x: new Date(item.bucket).getTime(),
-                  y: parseFloat(item.avg_irrad.toFixed(2)),
+                  y: item.sum_avg_irrad,
                 })),
               },
             ];
           }
         } catch (error) {
-          console.error("Error fetching Halmaj data:", error);
+          console.error("Error fetching PV data:", error);
         } finally {
           isLoading.value = false;
         }
       };
 
-      onMounted(fetchHalmajDataForDate);
+      onMounted(fetchPVDataForDate);
 
       return {
         selectedDate,
         chartData,
         chartOptions,
         isLoading,
-        handleDateChange: fetchHalmajDataForDate,
+        handleDateChange: fetchPVDataForDate,
       };
     },
   };
