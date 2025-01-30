@@ -103,7 +103,7 @@
               const bukkItem = bukkResponse[index] || { real_powerp: 0, avg_irrad: 0 };
               return {
                 bucket: halmajItem.bucket,
-                sum_real_powerp: parseFloat((halmajItem.real_powerp + bukkItem.real_powerp * -1).toFixed(2)),
+                sum_real_powerp: parseFloat((halmajItem.real_powerp + bukkItem.real_powerp).toFixed(2)),
                 sum_avg_irrad: parseFloat((halmajItem.avg_irrad + bukkItem.avg_irrad).toFixed(2)),
               };
             });

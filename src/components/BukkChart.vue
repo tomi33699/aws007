@@ -90,7 +90,7 @@ export default {
             color: "#5B51BF", // Termelés színe
             data: response.map((item) => ({
               x: new Date(item.bucket).getTime(),
-              y: parseFloat((-1 * item.real_powerp).toFixed(2)),
+              y: parseFloat((item.real_powerp).toFixed(2)),
             })),
           },
           {
