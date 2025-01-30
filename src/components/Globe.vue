@@ -52,7 +52,7 @@ export default {
         irradiance: null,
         cloudiness: null,
       },
-      apiKey: "d632949fb0a83b586e4353b3163db0f6",
+      apiKey: import.meta.env.VITE_OPENWEATHER_API_KEY,
       locations: {
         bukk: { lat: 47.9333, lon: 20.6667 },
         halmaj: { lat: 47.8167, lon: 20.0833 },
