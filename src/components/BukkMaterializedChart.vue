@@ -68,7 +68,6 @@
           {
             opposite: true,
             title: { text: "Avg Irradiation (W/m²)" },
-            max: 1000,
           },
         ],
         tooltip: {
