@@ -1,102 +1,139 @@
 <template>
-    <div class="globe-container">
-      <canvas ref="globeCanvas"></canvas>
-      <div class="overlay">
-        <div class="data-column left">
-          <div class="globe-item">
-            <i class="fas fa-thermometer-half"></i>
-            Bükk Hőmérséklet: <span>15°C</span>
-          </div>
-          <div class="globe-item">
-            <i class="fas fa-sun"></i>
-            Bükk Besugárzás: <span>200 W/m²</span>
-          </div>
-          <div class="globe-item">
-            <i class="fas fa-cloud"></i>
-            Bükk Felhő Valószínűség: <span>40%</span>
-          </div>
+  <div class="globe-container">
+    <canvas ref="globeCanvas"></canvas>
+    <div class="overlay">
+      <div class="data-column left">
+        <div class="globe-item">
+          <i class="fas fa-thermometer-half"></i>
+          Bükk Hőmérséklet: <span>{{ bukkData.temperature }}°C</span>
         </div>
-        <div class="data-column right">
-          <div class="globe-item">
-            <i class="fas fa-thermometer-half"></i>
-            Halmaj Hőmérséklet: <span>18°C</span>
-          </div>
-          <div class="globe-item">
-            <i class="fas fa-sun"></i>
-            Halmaj Besugárzás: <span>250 W/m²</span>
-          </div>
-          <div class="globe-item">
-            <i class="fas fa-cloud"></i>
-            Felhő Valószínűség: <span>30%</span>
-          </div>
+        <div class="globe-item">
+          <i class="fas fa-sun"></i>
+          Bükk Besugárzás: <span>{{ bukkData.irradiance }} W/m²</span>
+        </div>
+        <div class="globe-item">
+          <i class="fas fa-cloud"></i>
+          Bükk Felhő Valószínűség: <span>{{ bukkData.cloudiness }}%</span>
+        </div>
+      </div>
+      <div class="data-column right">
+        <div class="globe-item">
+          <i class="fas fa-thermometer-half"></i>
+          Halmaj Hőmérséklet: <span>{{ halmajData.temperature }}°C</span>
+        </div>
+        <div class="globe-item">
+          <i class="fas fa-sun"></i>
+          Halmaj Besugárzás: <span>{{ halmajData.irradiance }} W/m²</span>
+        </div>
+        <div class="globe-item">
+          <i class="fas fa-cloud"></i>
+          Halmaj Felhő Valószínűség: <span>{{ halmajData.cloudiness }}%</span>
         </div>
       </div>
     </div>
+  </div>
 </template>
 
 <script>
 import * as THREE from "three";
+import axios from "axios";
 
 export default {
-    name: "RotatingGlobe",
-    mounted() {
-        const canvas = this.$refs.globeCanvas;
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, canvas.offsetWidth / canvas.offsetHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  name: "RotatingGlobe",
+  data() {
+    return {
+      bukkData: {
+        temperature: null,
+        irradiance: null,
+        cloudiness: null,
+      },
+      halmajData: {
+        temperature: null,
+        irradiance: null,
+        cloudiness: null,
+      },
+      apiKey: "d632949fb0a83b586e4353b3163db0f6",
+      locations: {
+        bukk: { lat: 47.9333, lon: 20.6667 },
+        halmaj: { lat: 47.8167, lon: 20.0833 },
+      },
+    };
+  },
+  mounted() {
+    this.initGlobe();
+    this.fetchWeatherData();
+    setInterval(this.fetchWeatherData, 600000);
+  },
+  methods: {
+    initGlobe() {
+      const canvas = this.$refs.globeCanvas;
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, canvas.offsetWidth / canvas.offsetHeight, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 
-        // Set initial size and resize handler
-        function resizeCanvas() {
-            const parent = canvas.parentElement;
-            const newWidth = parent.offsetWidth ; // Make it half the width of the parent
-            const newHeight = parent.offsetHeight;
-            renderer.setSize(newWidth, newHeight);
-            camera.aspect = newWidth / newHeight;
-            camera.updateProjectionMatrix();
-        }
+      function resizeCanvas() {
+        const parent = canvas.parentElement;
+        const newWidth = parent.offsetWidth;
+        const newHeight = parent.offsetHeight;
+        renderer.setSize(newWidth, newHeight);
+        camera.aspect = newWidth / newHeight;
+        camera.updateProjectionMatrix();
+      }
 
-        resizeCanvas(); // Initial resize
-        window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+      window.addEventListener("resize", resizeCanvas);
 
-        const observer = new ResizeObserver(resizeCanvas);
-        observer.observe(canvas.parentElement); // Observe the parent container for changes
+      const observer = new ResizeObserver(resizeCanvas);
+      observer.observe(canvas.parentElement);
 
-        // Add sphere
-        const geometry = new THREE.SphereGeometry(1, 32, 32);
-        const texture = new THREE.TextureLoader().load("https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg");
-        const material = new THREE.MeshStandardMaterial({
-            map: texture,
-            metalness: 0.1,
-            roughness: 0.7,
-        });
-        const globe = new THREE.Mesh(geometry, material);
-        scene.add(globe);
+      const geometry = new THREE.SphereGeometry(1, 32, 32);
+      const texture = new THREE.TextureLoader().load("https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg");
+      const material = new THREE.MeshStandardMaterial({ map: texture, metalness: 0.1, roughness: 0.7 });
+      const globe = new THREE.Mesh(geometry, material);
+      scene.add(globe);
 
-        // Add ambient light
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-        scene.add(ambientLight);
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+      scene.add(ambientLight);
 
-        // Add directional light
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-        directionalLight.position.set(5, 5, 5);
-        scene.add(directionalLight);
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+      directionalLight.position.set(5, 5, 5);
+      scene.add(directionalLight);
 
-         // Add a dim background light for the globe
-         const backgroundLight = new THREE.PointLight(0x404040, 0.1);
-        backgroundLight.position.set(0, 0, -5);
-        scene.add(backgroundLight);
+      const backgroundLight = new THREE.PointLight(0x404040, 0.1);
+      backgroundLight.position.set(0, 0, -5);
+      scene.add(backgroundLight);
 
-        // Camera setup
-        camera.position.z = 2;
+      camera.position.z = 2;
 
-        // Animation loop
-        function animate() {
-            requestAnimationFrame(animate);
-            globe.rotation.y += 0.001; // Slow down rotation
-            renderer.render(scene, camera);
-        }
-        animate();
+      function animate() {
+        requestAnimationFrame(animate);
+        globe.rotation.y += 0.001;
+        renderer.render(scene, camera);
+      }
+      animate();
     },
+    async fetchWeatherData() {
+      try {
+        const bukkResponse = await axios.get(`https://api.openweathermap.org/data/3.0/onecall?lat=${this.locations.bukk.lat}&lon=${this.locations.bukk.lon}&units=metric&appid=${this.apiKey}`);
+        const halmajResponse = await axios.get(`https://api.openweathermap.org/data/3.0/onecall?lat=${this.locations.halmaj.lat}&lon=${this.locations.halmaj.lon}&units=metric&appid=${this.apiKey}`);
+
+        this.bukkData.temperature = bukkResponse.data.current.temp;
+        this.bukkData.cloudiness = bukkResponse.data.current.clouds;
+        this.bukkData.irradiance = this.calculateIrradiance(bukkResponse.data.current);
+        
+        this.halmajData.temperature = halmajResponse.data.current.temp;
+        this.halmajData.cloudiness = halmajResponse.data.current.clouds;
+        this.halmajData.irradiance = this.calculateIrradiance(halmajResponse.data.current);
+      } catch (error) {
+        console.error("Hiba az időjárás adatok lekérésekor:", error);
+      }
+    },
+    calculateIrradiance(data) {
+      const cloudFactor = 1 - data.clouds / 100;
+      const baseIrradiance = 1000;
+      return Math.round(baseIrradiance * cloudFactor);
+    }
+  }
 };
 </script>
 
