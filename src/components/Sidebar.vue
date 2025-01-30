@@ -25,7 +25,7 @@ const menus = ref([
   { label: "Dashboard", path: "/", icon: "fa-tachometer-alt" },
   { label: "Bükk", path: "/bukk", icon: "fa-cogs" },
   { label: "Halmaj", path: "/halmaj", icon: "fa-cogs" },
-  { label: "Charts", path: "/charts", icon: "fa-chart-line" },
+  /* { label: "Charts", path: "/charts", icon: "fa-chart-line" }, */
   /* { label: "Balancing", path: "/balancing", icon: "fa-balance-scale" },
   { label: "HUPX", path: "/hupx", icon: "fa-plug" },
   { label: "Load", path: "/load", icon: "fa-tachometer-alt" },

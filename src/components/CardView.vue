@@ -37,11 +37,11 @@ export default {
   computed: {
     cardData() {
       return {
-        "Bükk Prod Actual (kW)": -1*this.data.bukk_prod_actual?.toFixed(2) || "N/A",
-        "Bükk Irrad Actual (kW/m²)": this.data.bukk_irrad_actual?.toFixed(2) || "N/A",
+        "Bükk Prod Actual (kW)": Math.abs(this.data.bukk_prod_actual)?.toFixed(2) || "N/A",
         "Halmaj Prod Actual (kW)": this.data.halmaj_prod_actual?.toFixed(2) || "N/A",
-        "Halmaj Irrad Actual (kW/m²)": this.data.halmaj_irrad_actual?.toFixed(2) || "N/A",
         "PV Production Actual (kW)": Math.abs(this.data.pv_prod_actual)?.toFixed(2) || "N/A",
+        "Bükk Irrad Actual (kW/m²)": this.data.bukk_irrad_actual?.toFixed(2) || "N/A",
+        "Halmaj Irrad Actual (kW/m²)": this.data.halmaj_irrad_actual?.toFixed(2) || "N/A",
         "PV Irrad Actual (kW/m²)": this.data.pv_irrad_actual?.toFixed(2) || "N/A",
 /*         "HUPX Price Actual (€/MWh)": this.data.hupx_price_actual?.toFixed(2) || "N/A",
  */      };

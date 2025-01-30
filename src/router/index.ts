@@ -1,19 +1,30 @@
 import { createRouter, createWebHistory } from "vue-router";
+import DashboardPage from "@/pages/DashboardPage.vue";
+import BukkPage from "@/pages/BukkPage.vue";
+import HalmajPage from "@/pages/HalmajPage.vue";
 
 const routes = [
-  { path: "/", component: () => import("../pages/DashboardPage.vue") },
-  { path: "/bukk", component: () => import("../pages/BukkPage.vue") },
-  { path: "/halmaj", component: () => import("../pages/HalmajPage.vue") },
-  { path: "/charts", component: () => import("../pages/ChartsPage.vue") },
-  { path: "/balancing", component: () => import("../pages/BalancingPage.vue") },
-  { path: "/hupx", component: () => import("../pages/HupxPage.vue") },
-  { path: "/load", component: () => import("../pages/LoadPage.vue") },
-  { path: "/forecast", component: () => import("../pages/ForecastPage.vue") },
+  {
+    path: "/",
+    name: "Dashboard",
+    component: DashboardPage,
+  },
+  {
+    path: "/bukk",
+    name: "Bukk",
+    component: BukkPage,
+  },
+  {
+    path: "/halmaj",
+    name: "Halmaj",
+    component: HalmajPage,
+  },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior: () => ({ left: 0, top: 0 }), // Reset scroll on route change
 });
 
 export default router;

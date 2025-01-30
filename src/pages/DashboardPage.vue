@@ -14,7 +14,9 @@
       <PVChart />
       <ChartView />
     </div>
-    <RealTimeDashboard />
+    <div>
+      <BukkMaterializedChart />
+    </div>
   </div>
 </template>
 
@@ -22,12 +24,12 @@
 import { ref, onMounted } from "vue";
 import CardView from "../components/CardView.vue";
 import ChartView from "../components/ChartView.vue"; // Import the ChartView component
-import { getPvActualData } from "../services/apiService";
+import { getPvActualData } from "@/services/apiService";
 import PVChart from "@/components/PVChart.vue";
 import Banner from "@/components/Banner.vue";
 import CarouselBanner from "@/components/CarouselBanner.vue";
 import Globe from "@/components/Globe.vue";
-import RealTimeDashboard from "@/components/RealTimeDashboard.vue";
+import BukkMaterializedChart from "@/components/BukkMaterializedChart.vue";
 
 const actualData = ref({
   bukk_prod_actual: 0,

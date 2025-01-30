@@ -13,26 +13,33 @@ export async function fetchFromApi(endpoint: string, params?: Record<string, str
 
 // Bükk adatok
 export async function fetchBukkData(date: string): Promise<any[]> {
+  console.log(`[fetchBukkData] Fetching data for date: ${date}`);
   if (!date) {
-    throw new Error("A dátum kötelező a Bükk adatok lekéréséhez.");
+    throw new Error("[fetchBukkData] Missing date parameter.");
   }
 
-  const response = await fetch(`https://eforceapi.hu/bukk_1min_unregulated?date=${date}`);
-  if (!response.ok) {
-    throw new Error("Hiba történt a Bükk adatok lekérésekor.");
+  try {
+    const response = await fetch(`https://eforceapi.hu/bukk_1min_unregulated?date=${date}`);
+    if (!response.ok) {
+      throw new Error(`[fetchBukkData] API request failed with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("[fetchBukkData] API response:", data);
+
+    if (!Array.isArray(data)) {
+      console.warn("[fetchBukkData] The API response is not an array:", data);
+      return [];
+    }
+
+    return data;
+  } catch (error) {
+    console.error("[fetchBukkData] Error occurred:", error);
+    throw error;
   }
-
-  const data = await response.json();
-  
-
-  // Ellenőrizzük, hogy a válasz tömb-e, és térjünk vissza egy üres tömbbel, ha nem az.
-  if (!Array.isArray(data)) {
-    console.warn("A Bükk API válasza nem egy tömb:", data);
-    return [];
-  }
-
-  return data;
 }
+
+
 
 
 // Halmaj adatok

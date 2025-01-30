@@ -3,19 +3,23 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import { Amplify } from "aws-amplify";
 import outputs from "../amplify_outputs.json";
-import router from "./router"; // Import the router
-import '@fortawesome/fontawesome-free/css/all.css'; // FontAwesome for icons
-import VueApexCharts from "vue3-apexcharts"; // ApexCharts for charts
+import router from "./router";
+import "@fortawesome/fontawesome-free/css/all.css";
+import VueApexCharts from "vue3-apexcharts";
+import { initWebSocket } from "./services/webSocketService";
 
-// Configure AWS Amplify
+// AWS Amplify konfigurálása
 Amplify.configure(outputs);
 
-// Create Vue app instance
+// WebSocket inicializálása
+initWebSocket("wss://eforceapi.hu/ws");
+
+// Vue app létrehozása
 const app = createApp(App);
 
-// Use router and ApexCharts
+// Plugin-ek használata
 app.use(router);
-app.use(VueApexCharts); // Most itt regisztráljuk a VueApexCharts-t
+app.use(VueApexCharts);
 
-// Mount the app
+// App mountolása
 app.mount("#app");
