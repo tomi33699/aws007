@@ -4,7 +4,7 @@
     <div class="overlay">
       <div class="data-column left">
         <div class="chart-container"> 
-          <h2 class="chart-container-h2"> Időjárás előrejelzés <br> <span class="chart-cont-span">Bükkábrány</span></h2>
+          <h2 class="chart-container-h2"> Időjárás előrejelzés (24 órás)<br> <span class="chart-cont-span">Bükkábrány</span></h2>
           <apexchart
             type="line"
             height="80%"
@@ -20,10 +20,9 @@
           <i class="fas fa-sync-alt"></i> Frissítés
         </button>
       </div>
-
       <div class="data-column right">
         <div class="chart-container">
-          <h2 class="chart-container-h2"> Időjárás előrejelzés <br><span class="chart-cont-span">Halmajugra</span> </h2>
+          <h2 class="chart-container-h2"> Időjárás előrejelzés (24 órás) <br><span class="chart-cont-span">Halmajugra</span> </h2>
           <apexchart
             type="line"
             height="80%"
@@ -130,6 +129,11 @@ export default {
         this.bukkChartOptions = chartOptions;
       }
     },
+    async refreshData() {
+    console.log("🔄 Frissítés gomb megnyomva, adatok újrakérése...");
+    await this.fetchWeatherData();
+    this.lastUpdate = new Date().toLocaleString("hu-HU"); // Kézzel frissítjük az időbélyeget
+  },
     calculateIrradiance(data) {
       return Math.round(1000 * (1 - (data.clouds ?? 0) / 100));
     },
@@ -263,6 +267,26 @@ canvas {
   z-index: 15; /* Az overlay fölött is lesz */
   pointer-events: auto; /* Biztosítja, hogy kattintható marad */
 }
+
+.logo-container {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2em;
+  text-align: center;
+  z-index: 20;
+}
+
+.logo-container h1 {
+  font-family: 'Rubik Glitch', sans-serif;
+  font-size: 3.5rem;
+  font-weight: bold;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
 
 .refresh-btn {
   background-color: #fac107;

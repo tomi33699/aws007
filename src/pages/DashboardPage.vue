@@ -3,11 +3,11 @@
     <h1 class="dashboard-title"></h1>
     <!-- CardView Component -->
     <Globe />
+    <CardView :data="actualData" />
     <div class="banner-section">
      <Banner />
      <CarouselBanner />
     </div>
-    <CardView :data="actualData" />
     <!-- ChartView Component -->
     <div class="chart-section">
       <h2 class="chart-title"></h2>

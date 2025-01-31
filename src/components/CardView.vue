@@ -18,12 +18,12 @@
 import { defineProps } from "vue";
 
 const icons = {
-  "Bükk Prod Actual (kW)": "fas fa-solar-panel", // Solar panel icon
-  "Bükk Irrad Actual (kW/m²)": "fas fa-sun", // Sunshine icon
-  "Halmaj Prod Actual (kW)": "fas fa-industry", // Industry/production icon
-  "Halmaj Irrad Actual (kW/m²)": "fas fa-cloud-sun", // Cloudy sunshine icon
-  "PV Production Actual (kW)": "fas fa-bolt", // Lightning bolt for energy
-  "PV Irrad Actual (kW/m²)": "fas fa-lightbulb", // Light bulb for irradiation
+  "Aktuális termelés (Bükkábrány) [kW]": "fas fa-bolt", // Solar panel icon
+  "Aktuális tesugárzás (Halmajugra) (kW/m²)": "fas fa-sun", // Sunshine icon
+  "Aktuális termelés (Halmajugra) (kW)": "fas fa-bolt", // Industry/production icon
+  "Aktuális besugárzás (Bükkábrány) (kW/m²)": "fas fa-sun", // Cloudy sunshine icon
+  "Akutális termelés (Portfolio) (kW)": "fas fa-solar-panel", // Lightning bolt for energy
+  "Aktuális besugárzás (Portfolio) (kW/m²)": "fas fa-sun", // Light bulb for irradiation
 /*   "HUPX Price Actual (€/MWh)": "fas fa-euro-sign", // Euro currency icon
  */};
 
@@ -37,19 +37,19 @@ export default {
   computed: {
     cardData() {
       return {
-        "Bükk Prod Actual (kW)": Math.abs(this.data.bukk_prod_actual)?.toFixed(2) || "N/A",
-        "Halmaj Prod Actual (kW)": this.data.halmaj_prod_actual?.toFixed(2) || "N/A",
-        "PV Production Actual (kW)": Math.abs(this.data.pv_prod_actual)?.toFixed(2) || "N/A",
-        "Bükk Irrad Actual (kW/m²)": this.data.bukk_irrad_actual?.toFixed(2) || "N/A",
-        "Halmaj Irrad Actual (kW/m²)": this.data.halmaj_irrad_actual?.toFixed(2) || "N/A",
-        "PV Irrad Actual (kW/m²)": this.data.pv_irrad_actual?.toFixed(2) || "N/A",
+        "Akutális termelés (Portfolio) (kW)": Math.abs(this.data.pv_prod_actual)?.toFixed(2) || "N/A",
+        "Aktuális termelés (Bükkábrány) [kW]": Math.abs(this.data.bukk_prod_actual)?.toFixed(2) || "N/A",
+        "Aktuális termelés (Halmajugra) (kW)": this.data.halmaj_prod_actual?.toFixed(2) || "N/A",
+        "Aktuális besugárzás (Portfolio) (kW/m²)": this.data.pv_irrad_actual?.toFixed(2) || "N/A",
+        "Aktuális besugárzás (Halmajugra) (kW/m²)": this.data.bukk_irrad_actual?.toFixed(2) || "N/A",
+        "Aktuális besugárzás (Bükkábrány) (kW/m²)": this.data.halmaj_irrad_actual?.toFixed(2) || "N/A",
 /*         "HUPX Price Actual (€/MWh)": this.data.hupx_price_actual?.toFixed(2) || "N/A",
  */      };
     },
   },
   methods: {
     getIconClass(title) {
-      return icons[title] || "fas fa-exclamation-circle"; // Fallback icon
+      return icons[title] || "fas fa-sun"; // Fallback icon
     },
   },
 };
