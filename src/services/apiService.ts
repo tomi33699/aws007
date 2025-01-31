@@ -13,7 +13,6 @@ export async function fetchFromApi(endpoint: string, params?: Record<string, str
 
 // Bükk adatok
 export async function fetchBukkData(date: string): Promise<any[]> {
-  console.log(`[fetchBukkData] Fetching data for date: ${date}`);
   if (!date) {
     throw new Error("[fetchBukkData] Missing date parameter.");
   }
@@ -25,7 +24,6 @@ export async function fetchBukkData(date: string): Promise<any[]> {
     }
 
     const data = await response.json();
-    console.log("[fetchBukkData] API response:", data);
 
     if (!Array.isArray(data)) {
       console.warn("[fetchBukkData] The API response is not an array:", data);
@@ -35,6 +33,38 @@ export async function fetchBukkData(date: string): Promise<any[]> {
     return data;
   } catch (error) {
     console.error("[fetchBukkData] Error occurred:", error);
+    throw error;
+  }
+}
+
+
+export async function fetchBukkRawData(date: string): Promise<any[]> {
+  console.log(`[fetchBukkRawData] Fetching raw data for date: ${date}`);
+  if (!date) {
+    throw new Error("[fetchBukkRawData] Missing date parameter.");
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/bukk_raw_data?date=${date}`);
+    if (!response.ok) {
+      throw new Error(`[fetchBukkRawData] API request failed with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("[fetchBukkRawData] API response:", data);
+
+    if (!Array.isArray(data.data)) {
+      console.warn("[fetchBukkRawData] The API response is not an array:", data);
+      return [];
+    }
+
+    return data.data.map((item: { time?: string; powerp?: number; irrad?: number }) => ({
+      time: item.time ? new Date(item.time).getTime() : Date.now(), // Ha nincs time, az aktuális időbélyeg kerül be
+      powerp: item.powerp !== undefined ? parseFloat(item.powerp.toFixed(2)) : 0, // Ha nincs powerp, akkor 0
+      irrad: item.irrad !== undefined ? parseFloat(item.irrad.toFixed(2)) : 0 // Ha nincs irrad, akkor 0
+    }));
+  } catch (error) {
+    console.error("[fetchBukkRawData] Error occurred:", error);
     throw error;
   }
 }

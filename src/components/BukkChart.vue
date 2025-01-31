@@ -1,6 +1,9 @@
 <template>
   <div class="chart-view">
-    <h2>Bükk Chart</h2>
+    <h2>
+      Bükk Chart
+      <p class="last-updated">Last updated: {{ lastUpdated }}</p>
+    </h2>
     <label for="date-picker-bukk">Choose a date for Bükk:</label>
     <input
       id="date-picker-bukk"
@@ -12,21 +15,16 @@
       <span class="loader"></span>
     </div>
     <apexchart
-      v-if="!isLoading && chartData.length > 0"
       type="line"
       height="400"
       :options="chartOptions"
       :series="chartData"
     />
-    <div v-else-if="!isLoading && chartData.length === 0">
-      <p>No data available for the selected date.</p>
-    </div>
   </div>
 </template>
 
-
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import VueApexCharts from "vue3-apexcharts";
 import { fetchBukkData } from "@/services/apiService";
 
@@ -38,6 +36,8 @@ export default {
     const selectedDate = ref(new Date().toISOString().split("T")[0]); // Default to today
     const chartData = ref([]);
     const isLoading = ref(false);
+    const lastUpdated = ref("Never"); // Kezdőérték: "Never"
+    let refreshInterval = null;
 
     const chartOptions = ref({
       chart: {
@@ -47,27 +47,20 @@ export default {
           enabled: true,
           easing: "easeinout",
           speed: 500,
+          dynamicAnimation: {
+            enabled: true,
+            speed: 1000, // **Lágy mozgás frissítéskor**
+          },
         },
       },
       xaxis: {
         type: "datetime",
-        categories: [],
         labels: {
           formatter: (value) => {
-            const date = new Date(value);
-            return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
           },
         },
       },
-      yaxis: [
-        {
-          title: { text: "" },
-        },
-        {
-          opposite: true,
-          title: { text: "" },
-        },
-      ],
       tooltip: {
         shared: true,
         intersect: false,
@@ -75,7 +68,6 @@ export default {
     });
 
     const fetchBukkDataForDate = async () => {
-      isLoading.value = true;
       try {
         const response = await fetchBukkData(selectedDate.value);
         if (!response || response.length === 0) {
@@ -87,36 +79,58 @@ export default {
           {
             name: "Real PowerP",
             type: "line",
-            color: "#5B51BF", // Termelés színe
+            color: "#5B51BF",
             data: response.map((item) => ({
               x: new Date(item.bucket).getTime(),
-              y: parseFloat((item.real_powerp).toFixed(2)),
+              y: parseFloat(item.real_powerp.toFixed(2)),
             })),
           },
           {
             name: "Avg Irrad",
             type: "line",
-            color: "#FAC107", // Irradiáció színe
+            color: "#FAC107",
             data: response.map((item) => ({
               x: new Date(item.bucket).getTime(),
               y: parseFloat(item.avg_irrad.toFixed(2)),
             })),
           },
         ];
+
+        // **Frissítés időpont beállítása**
+        lastUpdated.value = new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+
       } catch (error) {
         console.error("Error fetching Bükk data:", error);
-      } finally {
-        isLoading.value = false;
       }
     };
 
-    onMounted(fetchBukkDataForDate);
+    onMounted(() => {
+      fetchBukkDataForDate();
+
+      // **Percenkénti frissítés**
+      refreshInterval = setInterval(() => {
+        console.log("🔄 Automatikus frissítés...");
+        fetchBukkDataForDate();
+      }, 60000);
+    });
+
+    // **Időzítő leállítása, ha a komponens elhagyja a DOM-ot**
+    onUnmounted(() => {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+    });
 
     return {
       selectedDate,
       chartData,
       chartOptions,
       isLoading,
+      lastUpdated,
       handleDateChange: fetchBukkDataForDate,
     };
   },
@@ -134,8 +148,17 @@ export default {
 }
 
 h2 {
-  margin-bottom: 1em;
+  margin-bottom: 0.5em;
   color: #333333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.last-updated {
+  font-size: 14px;
+  color: #777777;
+  margin-left: 10px;
 }
 
 label {

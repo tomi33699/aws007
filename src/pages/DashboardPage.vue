@@ -15,6 +15,7 @@
       <ChartView />
     </div>
     <div>
+      <BukkRealTime />
       <BukkMaterializedChart />
     </div>
   </div>
@@ -30,6 +31,7 @@ import Banner from "@/components/Banner.vue";
 import CarouselBanner from "@/components/CarouselBanner.vue";
 import Globe from "@/components/Globe.vue";
 import BukkMaterializedChart from "@/components/BukkMaterializedChart.vue";
+import BukkRealTime from "@/components/BukkRealTime.vue";
 
 const actualData = ref({
   bukk_prod_actual: 0,
