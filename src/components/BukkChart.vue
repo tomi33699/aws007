@@ -2,18 +2,18 @@
   <div class="chart-view">
     <h2>
       Bükk Chart
-      <p class="last-updated">Last updated: {{ lastUpdated }}</p>
+      <p class="last-updated">Utoljára frissítve: {{ lastUpdated }}</p>
     </h2>
-    <label for="date-picker-bukk">Choose a date for Bükk:</label>
+
+    <label for="date-picker-bukk">Dátumválasztás:</label>
     <input
       id="date-picker-bukk"
       type="date"
       v-model="selectedDate"
-      @change="handleDateChange"
+      @change="fetchBukkDataForDate"
     />
-    <div v-if="isLoading" class="loading-overlay">
-      <span class="loader"></span>
-    </div>
+
+    <!-- 📈 Chart -->
     <apexchart
       type="line"
       height="400"
@@ -33,10 +33,12 @@ export default {
     apexchart: VueApexCharts,
   },
   setup() {
-    const selectedDate = ref(new Date().toISOString().split("T")[0]); // Default to today
-    const chartData = ref([]);
-    const isLoading = ref(false);
-    const lastUpdated = ref("Never"); // Kezdőérték: "Never"
+    const selectedDate = ref(new Date().toISOString().split("T")[0]); // Default today
+    const chartData = ref([
+      { name: "Real PowerP", data: [] },
+      { name: "Avg Irrad", data: [] },
+    ]);
+    const lastUpdated = ref("Nincs adat");
     let refreshInterval = null;
 
     const chartOptions = ref({
@@ -47,20 +49,34 @@ export default {
           enabled: true,
           easing: "easeinout",
           speed: 500,
-          dynamicAnimation: {
-            enabled: true,
-            speed: 1000, // **Lágy mozgás frissítéskor**
-          },
+          dynamicAnimation: { enabled: true, speed: 1000 },
         },
       },
       xaxis: {
         type: "datetime",
         labels: {
-          formatter: (value) => {
-            return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-          },
+          formatter: (value) =>
+            new Date(value).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
         },
       },
+      yaxis: [
+        {
+          title: { text: "Real PowerP (kW)" },
+          labels: {
+            formatter: (value) => `${value} kW`,
+          },
+        },
+        {
+          opposite: true,
+          title: { text: "Avg Irrad (W/m²)" },
+          labels: {
+            formatter: (value) => `${value} W/m²`,
+          },
+        },
+      ],
       tooltip: {
         shared: true,
         intersect: false,
@@ -71,7 +87,10 @@ export default {
       try {
         const response = await fetchBukkData(selectedDate.value);
         if (!response || response.length === 0) {
-          chartData.value = [];
+          chartData.value = [
+            { name: "Real PowerP", data: [] },
+            { name: "Avg Irrad", data: [] },
+          ];
           return;
         }
 
@@ -93,32 +112,27 @@ export default {
               x: new Date(item.bucket).getTime(),
               y: parseFloat(item.avg_irrad.toFixed(2)),
             })),
+            yaxisIndex: 1, // **⬅️ Külön Y tengelyen**
           },
         ];
 
-        // **Frissítés időpont beállítása**
         lastUpdated.value = new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
           second: "2-digit",
         });
-
       } catch (error) {
-        console.error("Error fetching Bükk data:", error);
+        console.error("Hiba történt a Bükk adatlekérés közben:", error);
       }
     };
 
     onMounted(() => {
       fetchBukkDataForDate();
-
-      // **Percenkénti frissítés**
       refreshInterval = setInterval(() => {
-        console.log("🔄 Automatikus frissítés...");
         fetchBukkDataForDate();
       }, 60000);
     });
 
-    // **Időzítő leállítása, ha a komponens elhagyja a DOM-ot**
     onUnmounted(() => {
       if (refreshInterval) {
         clearInterval(refreshInterval);
@@ -129,9 +143,8 @@ export default {
       selectedDate,
       chartData,
       chartOptions,
-      isLoading,
       lastUpdated,
-      handleDateChange: fetchBukkDataForDate,
+      fetchBukkDataForDate,
     };
   },
 };
@@ -140,16 +153,16 @@ export default {
 <style scoped>
 .chart-view {
   padding: 1em;
-  position: relative;
   background-color: #ffffff;
   border-radius: 10px;
   min-height: 30em;
   box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 h2 {
-  margin-bottom: 0.5em;
-  color: #333333;
+  color: #333;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -157,8 +170,7 @@ h2 {
 
 .last-updated {
   font-size: 14px;
-  color: #777777;
-  margin-left: 10px;
+  color: #777;
 }
 
 label {
@@ -169,36 +181,5 @@ input[type="date"] {
   margin-bottom: 20px;
   padding: 5px;
   font-size: 16px;
-}
-
-.loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(255, 255, 255, 0.8);
-  z-index: 10;
-}
-
-.loader {
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #007bff;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }
 </style>

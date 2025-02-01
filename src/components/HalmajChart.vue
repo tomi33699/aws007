@@ -1,193 +1,165 @@
 <template>
-    <div class="chart-view">
-      <h2>Halmaj Chart</h2>
-      <label for="date-picker-halmaj">Choose a date for Halmaj:</label>
-      <input
-        id="date-picker-halmaj"
-        type="date"
-        v-model="selectedDate"
-        @change="handleDateChange"
-      />
-      <div v-if="isLoading" class="loading-overlay">
-        <span class="loader"></span>
-      </div>
-      <div v-else>
-        <apexchart
-          v-if="chartData.length > 0"
-          type="line"
-          height="400"
-          :options="chartOptions"
-          :series="chartData"
-        />
-        <p v-else>No data available for the selected date.</p>
-      </div>
-    </div>
-  </template>
+  <div class="chart-view">
+    <h2>Halmaj Chart</h2>
+    <label for="date-picker-halmaj">Dátumválasztás:</label>
+    <input
+      id="date-picker-halmaj"
+      type="date"
+      v-model="selectedDate"
+      @change="fetchHalmajDataForDate"
+    />
 
-  <script>
-  import { ref, onMounted } from "vue";
-  import VueApexCharts from "vue3-apexcharts";
-  import { fetchHalmajData } from "@/services/apiService";
+    <!-- 📈 Chart -->
+    <apexchart
+      type="line"
+      height="400"
+      :options="chartOptions"
+      :series="chartData"
+    />
+  </div>
+</template>
 
-  export default {
-    components: {
-      apexchart: VueApexCharts,
-    },
-    setup() {
-      const selectedDate = ref(new Date().toISOString().split("T")[0]); // Default to today
-      const chartData = ref([]);
-      const isLoading = ref(false);
+<script>
+import { ref, onMounted, onUnmounted } from "vue";
+import VueApexCharts from "vue3-apexcharts";
+import { fetchHalmajData } from "@/services/apiService";
 
-      const chartOptions = ref({
-        chart: {
-          type: "line",
-          zoom: { enabled: false },
-          animations: {
-            enabled: true,
-            easing: "easeinout",
-            speed: 500,
-          },
+export default {
+  components: {
+    apexchart: VueApexCharts,
+  },
+  setup() {
+    const selectedDate = ref(new Date().toISOString().split("T")[0]); // Default today
+    const chartData = ref([
+      { name: "Real PowerP", data: [] },
+      { name: "Avg Irrad", data: [] },
+    ]);
+
+    let refreshInterval = null;
+
+    const chartOptions = ref({
+      chart: {
+        type: "line",
+        zoom: { enabled: false },
+        animations: {
+          enabled: true,
+          easing: "easeinout",
+          speed: 500,
         },
-        xaxis: {
-          type: "datetime",
-          categories: [],
+      },
+      xaxis: {
+        type: "datetime",
+        labels: {
+          formatter: (value) =>
+            new Date(value).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+        },
+      },
+      yaxis: [
+        {
+          title: { text: "Real PowerP (kW)" },
           labels: {
-            formatter: (value) => {
-              const date = new Date(value);
-              return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-            },
+            formatter: (value) => `${value} kW`,
           },
         },
-        yaxis: [
-          {
-            title: { text: "" },
-            labels: {
-              formatter: (value) => `${value} kW`,
-            },
-          },
-          {
-            opposite: true,
-            title: { text: "" },
-            labels: {
-              formatter: (value) => `${value} kW/m²`,
-            },
-          },
-        ],
-        legend: {
-          show: true,
-          markers: {
-            width: 12,
-            height: 12,
+        {
+          opposite: true,
+          title: { text: "Avg Irrad (W/m²)" },
+          labels: {
+            formatter: (value) => `${value} W/m²`,
           },
         },
-        tooltip: {
-          shared: true,
-          intersect: false,
-        },
-      });
+      ],
+      tooltip: {
+        shared: true,
+        intersect: false,
+      },
+    });
 
-      const fetchHalmajDataForDate = async () => {
-        isLoading.value = true;
-        try {
-          const response = await fetchHalmajData(selectedDate.value);
-
-          if (!response || response.length === 0) {
-            console.warn("No data found for the selected date.");
-            chartData.value = [];
-          } else {
-            chartData.value = [
-              {
-                name: "Real PowerP",
-                type: "line",
-                color: "#5B51BF", // Termelés színe
-                data: response.map((item) => ({
-                  x: new Date(item.bucket).getTime(),
-                  y: parseFloat(item.real_powerp.toFixed(2)),
-                })),
-              },
-              {
-                name: "Avg Irrad",
-                type: "line",
-                color: "#FAC107", // Irradiáció színe
-                data: response.map((item) => ({
-                  x: new Date(item.bucket).getTime(),
-                  y: parseFloat(item.avg_irrad.toFixed(2)),
-                })),
-              },
-            ];
-          }
-        } catch (error) {
-          console.error("Error fetching Halmaj data:", error);
-        } finally {
-          isLoading.value = false;
+    const fetchHalmajDataForDate = async () => {
+      try {
+        const response = await fetchHalmajData(selectedDate.value);
+        if (!response || response.length === 0) {
+          chartData.value = [
+            { name: "Real PowerP", data: [] },
+            { name: "Avg Irrad", data: [] },
+          ];
+          return;
         }
-      };
 
-      onMounted(fetchHalmajDataForDate);
+        chartData.value = [
+          {
+            name: "Real PowerP",
+            type: "line",
+            color: "#5B51BF",
+            data: response.map((item) => ({
+              x: new Date(item.bucket).getTime(),
+              y: parseFloat(item.real_powerp.toFixed(2)),
+            })),
+          },
+          {
+            name: "Avg Irrad",
+            type: "line",
+            color: "#FAC107",
+            data: response.map((item) => ({
+              x: new Date(item.bucket).getTime(),
+              y: parseFloat(item.avg_irrad.toFixed(2)),
+            })),
+            yaxisIndex: 1, // **⬅️ Külön Y tengelyen**
+          },
+        ];
+      } catch (error) {
+        console.error("Hiba történt a Halmaj adatlekérés közben:", error);
+      }
+    };
 
-      return {
-        selectedDate,
-        chartData,
-        chartOptions,
-        isLoading,
-        handleDateChange: fetchHalmajDataForDate,
-      };
-    },
-  };
-  </script>
+    onMounted(() => {
+      fetchHalmajDataForDate();
+      refreshInterval = setInterval(() => {
+        fetchHalmajDataForDate();
+      }, 60000);
+    });
 
-  <style scoped>
-  .chart-view {
-    padding: 1em;
-    position: relative;
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
-  }
+    onUnmounted(() => {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+    });
 
-  h2 {
-    margin-bottom: 1em;
-    color: #333333;
-  }
+    return {
+      selectedDate,
+      chartData,
+      chartOptions,
+      fetchHalmajDataForDate,
+    };
+  },
+};
+</script>
 
-  label {
-    margin-right: 10px;
-  }
+<style scoped>
+.chart-view {
+  padding: 1em;
+  background-color: #ffffff;
+  border-radius: 10px;
+  min-height: 30em;
+  box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  overflow-x: hidden;
+}
 
-  input[type="date"] {
-    margin-bottom: 20px;
-    padding: 5px;
-    font-size: 16px;
-  }
+h2 {
+  color: #333;
+}
 
-  .loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(255, 255, 255, 0.8);
-    z-index: 10;
-  }
+label {
+  margin-right: 10px;
+}
 
-  .loader {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #007bff;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-  </style>
+input[type="date"] {
+  margin-bottom: 20px;
+  padding: 5px;
+  font-size: 16px;
+}
+</style>

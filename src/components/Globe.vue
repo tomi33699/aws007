@@ -154,7 +154,10 @@ export default {
     },
     initGlobe() {
       const canvas = this.$refs.globeCanvas;
-      if (!canvas) return;
+      if (!canvas) {
+    console.error("🚨 Hiba: A Globe Canvas nem található!");
+    return;
+  }
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
       const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -195,10 +198,12 @@ canvas {
   width: 100%;
   height: 100%;
   display: block;
-  position: relative; /* A canvasnak megmarad az alap pozíciója */
-  z-index: 1; /* A háttérben marad */
-
+  position: absolute; /* Fixálja a helyzetét */
+  top: 0;
+  left: 0;
+  z-index: 1;
 }
+
 
 .overlay {
   position: absolute;

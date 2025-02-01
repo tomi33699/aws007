@@ -356,7 +356,7 @@
   }
 
   .interval-buttons button.active {
-    background-color: #007bff;
+    background-color: #5B51BF;
     color: white;
   }
 
@@ -376,7 +376,7 @@
     cursor: pointer;
   }
   .time-range-buttons button.active {
-    background-color: #007bff;
+    background-color: #5B51BF;
     color: white;
   }
   .export-dialog {
@@ -447,7 +447,7 @@
 }
 
 .export-btn {
-  background-color: #007bff;
+  background-color: #5B51BF;
   color: white;
   padding: 8px 12px;
   border: none;

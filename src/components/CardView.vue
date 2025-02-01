@@ -1,13 +1,13 @@
 <template>
   <div class="card-view">
-    <div v-for="(value, title) in cardData" :key="title" class="card">
+    <div v-for="(item, title) in cardData" :key="title" class="card">
       <div class="card-content">
         <div class="card-icon">
           <i :class="getIconClass(title)"></i>
         </div>
         <div>
           <h4 class="card-title">{{ title }}</h4>
-          <p class="card-value">{{ value }}</p>
+          <p class="card-value">{{ item.value }} <span class="unit">{{ item.unit }}</span></p>
         </div>
       </div>
     </div>
@@ -18,14 +18,13 @@
 import { defineProps } from "vue";
 
 const icons = {
-  "Aktuális termelés (Bükkábrány) [kW]": "fas fa-bolt", // Solar panel icon
-  "Aktuális tesugárzás (Halmajugra) (W/m²)": "fas fa-sun", // Sunshine icon
-  "Aktuális termelés (Halmajugra) (kW)": "fas fa-bolt", // Industry/production icon
-  "Aktuális besugárzás (Bükkábrány) (W/m²)": "fas fa-sun", // Cloudy sunshine icon
-  "Akutális termelés (Portfolio) (kW)": "fas fa-solar-panel", // Lightning bolt for energy
-  "Aktuális besugárzás (Portfolio) (W/m²)": "fas fa-sun", // Light bulb for irradiation
-/*   "HUPX Price Actual (€/MWh)": "fas fa-euro-sign", // Euro currency icon
- */};
+  "Aktuális termelés (Bükkábrány)": "fas fa-bolt", // Villám ikon
+  "Aktuális besugárzás (Halmajugra)": "fas fa-sun", // Nap ikon
+  "Aktuális termelés (Halmajugra)": "fas fa-bolt", // Villám ikon
+  "Aktuális besugárzás (Bükkábrány)": "fas fa-sun", // Nap ikon
+  "Aktuális termelés (Portfolio)": "fas fa-solar-panel", // Napelem ikon
+  "Aktuális besugárzás (Portfolio)": "fas fa-sun", // Napfény ikon
+};
 
 export default {
   props: {
@@ -37,19 +36,36 @@ export default {
   computed: {
     cardData() {
       return {
-        "Akutális termelés (Portfolio) (kW)": Math.abs(this.data.pv_prod_actual)?.toFixed(2) || "N/A",
-        "Aktuális termelés (Bükkábrány) [kW]": Math.abs(this.data.bukk_prod_actual)?.toFixed(2) || "N/A",
-        "Aktuális termelés (Halmajugra) (kW)": this.data.halmaj_prod_actual?.toFixed(2) || "N/A",
-        "Aktuális besugárzás (Portfolio) (W/m²)": this.data.pv_irrad_actual?.toFixed(2) || "N/A",
-        "Aktuális besugárzás (Halmajugra) (W/m²)": this.data.bukk_irrad_actual?.toFixed(2) || "N/A",
-        "Aktuális besugárzás (Bükkábrány) (W/m²)": this.data.halmaj_irrad_actual?.toFixed(2) || "N/A",
-/*         "HUPX Price Actual (€/MWh)": this.data.hupx_price_actual?.toFixed(2) || "N/A",
- */      };
+        "Aktuális termelés (Portfolio)": {
+          value: this.data.pv_prod_actual?.toFixed(2) || "N/A",
+          unit: "kW",
+        },
+        "Aktuális termelés (Bükkábrány)": {
+          value: this.data.bukk_prod_actual?.toFixed(2) || "N/A",
+          unit: "kW",
+        },
+        "Aktuális termelés (Halmajugra)": {
+          value: this.data.halmaj_prod_actual?.toFixed(2) || "N/A",
+          unit: "kW",
+        },
+        "Aktuális besugárzás (Portfolio)": {
+          value: this.data.pv_irrad_actual?.toFixed(2) || "N/A",
+          unit: "W/m²",
+        },
+        "Aktuális besugárzás (Halmajugra)": {
+          value: this.data.bukk_irrad_actual?.toFixed(2) || "N/A",
+          unit: "W/m²",
+        },
+        "Aktuális besugárzás (Bükkábrány)": {
+          value: this.data.halmaj_irrad_actual?.toFixed(2) || "N/A",
+          unit: "W/m²",
+        },
+      };
     },
   },
   methods: {
     getIconClass(title) {
-      return icons[title] || "fas fa-sun"; // Fallback icon
+      return icons[title] || "fas fa-sun"; // Alapértelmezett ikon
     },
   },
 };
@@ -58,8 +74,8 @@ export default {
 <style scoped>
 .card-view {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 1em 2em;
+  grid-template-columns: repeat(auto-fit, minmax(1em, 1fr));
+  gap: 1em;
   margin: 0 1em;
 }
 
@@ -75,24 +91,29 @@ export default {
   cursor: pointer;
 }
 
-
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 4px 6px 8px rgba(0, 0, 0, 0.15);
+}
 
 .card-content {
   width: 100%;
   display: grid;
-  grid-template-columns: .8fr 1.6fr;
+  grid-template-columns: 0.8fr 1.6fr;
   align-content: center;
 }
 
-.card-icon {  
-  font-size: 1.2em;
-  color: #FAC107;
-  align-content: center;
+.card-icon {
+  font-size: 1.5em;
+  color: #fac107;
   text-align: center;
   background: #333333;
   width: 50%;
   height: 100%;
   border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .card-title {
@@ -102,9 +123,13 @@ export default {
 
 .card-value {
   font-weight: bold;
-  color: #5B51BF;
+  color: #5b51bf;
   margin: 5px 0 0;
 }
+
+.unit {
+  font-size: 0.9em;
+  color: #666;
+  margin-left: 5px;
+}
 </style>
-
-

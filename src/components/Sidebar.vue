@@ -1,19 +1,31 @@
 <template>
   <div class="sidebar" :class="{ collapsed: isSidebarCollapsed }">
+    <!-- Logo & Sidebar Toggle -->
     <div class="logo-container" @click="toggleSidebar">
       <i class="logo-icon fa fa-bolt"></i>
-      <h2 v-if="!isSidebarCollapsed" class="logo-text">EnergyForce</h2>
+      <transition name="fade">
+        <h2 v-if="!isSidebarCollapsed" class="logo-text">EnergyForce</h2>
+      </transition>
     </div>
+
+    <!-- Menü elemek -->
     <ul class="menu">
-      <li v-for="menu in menus" :key="menu.path" class="menu-items">
+      <li v-for="menu in menus" :key="menu.path" class="menu-item">
         <router-link :to="menu.path" active-class="active">
           <i :class="['fa', menu.icon]"></i>
-          <span v-if="!isSidebarCollapsed">{{ menu.label }}</span>
+          <transition name="fade">
+            <span v-if="!isSidebarCollapsed">{{ menu.label }}</span>
+          </transition>
         </router-link>
       </li>
     </ul>
+
+    <!-- Kijelentkezés gomb -->
     <button class="sign-out-button" @click="signOut">
-      <span v-if="!isSidebarCollapsed">Kijelentkezés</span>
+      <i class="fa fa-sign-out-alt"></i>
+      <transition name="fade">
+        <span v-if="!isSidebarCollapsed">Kijelentkezés</span>
+      </transition>
     </button>
   </div>
 </template>
@@ -23,13 +35,8 @@ import { ref, defineEmits } from "vue";
 
 const menus = ref([
   { label: "Dashboard", path: "/", icon: "fa-tachometer-alt" },
-  { label: "Időjárás", path: "/weather", icon: "fa-cogs" },
-  { label: "Halmaj", path: "/halmaj", icon: "fa-cogs" },
-  /* { label: "Charts", path: "/charts", icon: "fa-chart-line" }, */
-  /* { label: "Balancing", path: "/balancing", icon: "fa-balance-scale" },
-  { label: "HUPX", path: "/hupx", icon: "fa-plug" },
-  { label: "Load", path: "/load", icon: "fa-tachometer-alt" },
-  { label: "Forecast", path: "/forecast", icon: "fa-calendar" }, */
+  { label: "Időjárás", path: "/weather", icon: "fa-cloud-sun" },
+  { label: "Halmaj", path: "/halmaj", icon: "fa-solar-panel" },
 ]);
 
 const isSidebarCollapsed = ref(false);
@@ -44,121 +51,121 @@ defineProps(["signOut"]);
 </script>
 
 <style scoped>
+/* ===== Alap Sidebar Stílus ===== */
 .sidebar {
-  background-color: #4b42ab;
+  background-color: #2C2F48;
   color: white;
-  width: 15vw; /* Alapértelmezett szélesség */
+  width: 14vw;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1vh 0.8vw;
-  transition: width 0.5s ease; /* Csak a szélesség animálása */
+  padding: 1vh 1vw;
+  transition: width 0.4s ease-in-out;
   overflow: hidden;
+  box-shadow: 3px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* ===== Összecsukott Sidebar ===== */
 .sidebar.collapsed {
-  width: 7vw; /* Az összecsukott állapot szélessége */
+  width: 5vw;
 }
 
+/* ===== Logo & Sidebar Toggle ===== */
 .logo-container {
-  margin: 1em 0;
-  display: flex;
-  gap: 1em;
-  flex-direction: column;
-  text-align: center;
-  cursor: pointer; /* Mutatóváltás jelzi a kattinthatóságot */
-}
-
-.logo-container i{
-  font-size: 2em;
-}
-
-.logo {
-  width: 80%;
-  transition: 0.3s ease;
-  margin-bottom: 0em;
-  padding-top: 1em;
-}
-
-.logo-icon{
-  color: #fac107e5;
-}
-
-.menu {
-  list-style: none;
-  padding: 0;
-  margin-bottom: auto;
-  margin-top: 5em;
-}
-
-.menu-items {
-  text-decoration: none;
-  width: max-content;
-  padding: 1em;
-  width: 100%;
-  border-radius: 4px;
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Középre igazítja az ikonokat */
-  border-bottom: 1px solid #fbf5f3;
+  gap: 1em;
+  cursor: pointer;
+  padding: 1em 0;
 }
 
-.menu-items.active {
-  background-color: #c8dfe7;
-  border-radius: 5px;
+.logo-icon {
+  font-size: 1.8em;
+  color: #FAC107;
 }
 
-.menu-items i {
-  margin-right: 1vw; /* Rugalmas méretezés */
-  color: #fac107e5;
-}
-
-.menu-items span {
-  transition: 0.2s;
-  color: #fbf5f3;
+.logo-text {
+  font-size: 1.2em;
   font-weight: bold;
 }
 
-.menu-items span:hover {
-  color: #FAC107; 
+/* ===== Menü Lista ===== */
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 2em 0;
 }
 
-li {
-  width: max-content;
+.menu-item {
+  padding: 1em;
+  border-radius: 8px;
+  transition: background 0.3s, transform 0.2s;
 }
 
+.menu-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(5px);
+}
+
+.menu-item i {
+  font-size: 1.2em;
+  color: #FAC107;
+  margin-right: 0.8em;
+}
+
+.menu-item span {
+  font-weight: bold;
+  color: #ffffff;
+}
+
+/* ===== Aktív Menüelem ===== */
+.active {
+
+  border-radius: 8px;
+}
+
+/* ===== Kijelentkezés Gomb ===== */
 .sign-out-button {
-  background-color: #fac107e5 ;
-  color: rgb(16, 15, 15);
+  background-color: #ff4d4d;
+  color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
-  padding: 1em 2vw;
+  padding: 1em;
   display: flex;
-  justify-content: center;
   align-items: center;
-  transition: .2s;
-}
-
-.sign-out-button span {
-  display: inline-block;
+  justify-content: center;
+  gap: 0.8em;
+  font-size: 1em;
+  transition: background 0.3s ease;
 }
 
 .sign-out-button:hover {
-  background-color: black;
-  color: #c8dfe7;
+  background-color: #ff3333;
 }
 
-a {
-  text-decoration: none;
-}
-
-.sidebar.collapsed .menu-items span,
-.sidebar.collapsed .sign-out-button span {
+/* ===== Összecsukott Állapothoz ===== */
+.sidebar.collapsed .menu-item span,
+.sidebar.collapsed .sign-out-button span,
+.sidebar.collapsed .logo-text {
   display: none;
 }
 
-.sidebar.collapsed .menu-items {
-  justify-content: center; /* Középre igazítja az ikonokat */
+.sidebar.collapsed .menu-item {
+  justify-content: center;
+}
+
+.sidebar.collapsed .menu-item i {
+  margin-right: 0;
+}
+
+/* ===== Fade Animáció a Szövegeknek ===== */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease-in-out;
+}
+
+.fade-enter, .fade-leave-to {
+  opacity: 0;
 }
 </style>
