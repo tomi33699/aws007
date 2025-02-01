@@ -8,7 +8,6 @@
       v-model="selectedDate"
       @change="fetchHalmajDataForDate"
     />
-
     <!-- 📈 Chart -->
     <apexchart
       type="line"
@@ -18,12 +17,10 @@
     />
   </div>
 </template>
-
 <script>
 import { ref, onMounted, onUnmounted } from "vue";
 import VueApexCharts from "vue3-apexcharts";
 import { fetchHalmajData } from "@/services/apiService";
-
 export default {
   components: {
     apexchart: VueApexCharts,
@@ -34,9 +31,7 @@ export default {
       { name: "Real PowerP", data: [] },
       { name: "Avg Irrad", data: [] },
     ]);
-
     let refreshInterval = null;
-
     const chartOptions = ref({
       chart: {
         type: "line",
@@ -77,7 +72,6 @@ export default {
         intersect: false,
       },
     });
-
     const fetchHalmajDataForDate = async () => {
       try {
         const response = await fetchHalmajData(selectedDate.value);
@@ -88,7 +82,6 @@ export default {
           ];
           return;
         }
-
         chartData.value = [
           {
             name: "Real PowerP",
@@ -114,20 +107,17 @@ export default {
         console.error("Hiba történt a Halmaj adatlekérés közben:", error);
       }
     };
-
     onMounted(() => {
       fetchHalmajDataForDate();
       refreshInterval = setInterval(() => {
         fetchHalmajDataForDate();
       }, 60000);
     });
-
     onUnmounted(() => {
       if (refreshInterval) {
         clearInterval(refreshInterval);
       }
     });
-
     return {
       selectedDate,
       chartData,
@@ -137,7 +127,6 @@ export default {
   },
 };
 </script>
-
 <style scoped>
 .chart-view {
   padding: 1em;
@@ -148,15 +137,12 @@ export default {
   max-width: 100%;
   overflow-x: hidden;
 }
-
 h2 {
   color: #333;
 }
-
 label {
   margin-right: 10px;
 }
-
 input[type="date"] {
   margin-bottom: 20px;
   padding: 5px;

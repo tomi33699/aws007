@@ -8,24 +8,17 @@
         <div class="info-block">
           <p><span class="badge-dot bg-success"></span>Hupx ár</p>
           <h2>{{ hupxPrice.toFixed(2) }} EUR/MWh</h2>
-          <p>Dátum: {{ hupxDate }}</p><h2></h2>
-          <!-- <div class="info-details">
-            <div>
-              <p>Min <span class="text-danger">648.0</span> <i class="fas fa-sort-down"></i></p>
-            </div>
-            <div>
-              <p>Max <span class="text-success">928.0</span> <i class="fas fa-sort-up"></i></p>
-            </div>
-          </div> -->
+          <p>Dátum: {{ hupxDate }}</p>
         </div>
         <hr class="my-35" />
-      
+
         <div class="info-block">
           <p><span class="badge-dot bg-warning"></span> Gáz ár TTF</p>
           <h2>51.11 EUR/MWh</h2>
-          <p>Dátum: {{ hupxDate }}</p><h2></h2>
+          <p>Dátum: {{ hupxDate }}</p>
         </div>
       </div>
+
       <div class="banner-right">
         <img src="@/assets/solar-panel.png" alt="Solar Panel" class="banner-img" />
         <div class="stats-box">
@@ -33,14 +26,14 @@
             <i class="fas fa-solar-panel text-success"></i>
             <div>
               <p>Napi termelés</p>
-              <h5>{{ dailyPortfolioPower }} kWh</h5>
+              <h5>{{ formatNumber(dailyPortfolioPower / 1000) }} MWh</h5>
             </div>
           </div>
           <div class="stat-item">
-            <i class="fas fa-battery-full text-success"></i>
+            <i class="fas fa-battery-full text-warning"></i>
             <div>
               <p>Havi termelés</p>
-              <h5>{{ monthlyPortfolioPower }} kWh</h5>            
+              <h5>{{ formatNumber(monthlyPortfolioPower / 1000) }} MWh</h5>            
             </div>
           </div>
         </div>
@@ -69,11 +62,7 @@ export default {
   methods: {
     async fetchHupxPrice() {
       try {
-        console.log("Fetching HUPX data...");
-        
         const hupxData = await getHupxData();
-        console.log("HUPX Data API response:", hupxData);
-        
         if (Array.isArray(hupxData) && hupxData.length > 0) {
           const latestDate = hupxData[hupxData.length - 1].date;
           const avgPrice = hupxData
@@ -90,18 +79,16 @@ export default {
 
     async fetchPortfolioPower() {
       try {
-        console.log("Fetching daily portfolio power data...");
-        
         const bukkDaily = await fetchBukkDailyData();
         const halmajDaily = await fetchHalmajDailyData();
-        
+
         const today = new Date().toISOString().split("T")[0]; // Aktuális dátum YYYY-MM-DD formátumban
         const currentMonth = today.slice(0, 7); // Aktuális hónap YYYY-MM formátumban
 
         // Napi teljesítmény számítása
         const bukkToday = bukkDaily.find(entry => entry.date === today)?.daily_powerp || 0;
         const halmajToday = halmajDaily.find(entry => entry.date === today)?.daily_powerp || 0;
-        this.dailyPortfolioPower = (bukkToday + halmajToday).toFixed(2);
+        this.dailyPortfolioPower = (bukkToday + halmajToday);
 
         // Havi teljesítmény számítása
         const bukkMonthly = bukkDaily
@@ -112,168 +99,117 @@ export default {
           .filter(entry => entry.date.startsWith(currentMonth))
           .reduce((sum, entry) => sum + entry.daily_powerp, 0);
 
-        this.monthlyPortfolioPower = (bukkMonthly + halmajMonthly).toFixed(2);
+        this.monthlyPortfolioPower = (bukkMonthly + halmajMonthly);
 
-        console.log("Daily Portfolio Power:", this.dailyPortfolioPower);
-        console.log("Monthly Portfolio Power:", this.monthlyPortfolioPower);
       } catch (error) {
         console.error("Error fetching portfolio power data:", error);
       }
-    }
+    },
+
+    formatNumber(value) {
+      return value.toLocaleString("hu-HU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    },
   }
 };
 </script>
 
-  <style scoped>
-  .banner-container {
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.05);
-    display: flex;
-    flex-direction: column;
-    font-family: inherit;
-    
-  }
-  
-  .green{
-    color: green
-  }
-  
-  .banner-header {
-    color: #0E0E23;
-    display: block;
-    padding: 1em;
-    position: relative;
-    border-bottom: 1px solid #f0f3f6;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-  }
-  
-  .banner-header h4 {
-    color: #0e0e23;
-    font-weight: 500;
-  }
-  
-  .box-body{
-    padding: 1em;
-    -ms-flex: 1 1 auto;
-    flex: 1 1 auto;
-    border-radius: 10px;
-  }
-  
-  .banner-body {
-    padding: 1em;
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  .banner-left {
-    flex: 1;
-    padding: 0 1em;
-  }
-  
-  .info-block {
-    margin-bottom: 20px;
-    line-height: 1.8em;
-  }
-  
-  .info-block h1 {
-    margin: 10px 0;
-    color: #0e0e23;
-  }
+<style scoped>
+.banner-container {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  font-family: inherit;
+}
 
-  
-  .info-details {
-    display: flex;
-    justify-content: flex-start;
-    gap: 1em;
-  }
-  
-  .info-details p {
-    margin: 0;
-    font-size: .9em;
-    
-  }
-  
-  .badge-dot {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin-right: 5px;
-  }
-  
-  .bg-success {
-    background-color: #198754;
-  }
-  
-  .bg-warning {
-    background-color: #ffc107;
-  }
-  
-  .text-danger {
-    color: #dc3545;
-  }
-  
-  .text-success {
-    color: #198754;
-  }
-  
-  hr {
-    margin: 20px 0;
-    border: none;
-    border-top: 1px solid #dee2e6;
-  }
+.green {
+  color: green;
+}
 
-  .fw-bold{
-    font-weight: bold;
-  }
-  
-  .banner-right {
-    flex: 1;
-    text-align: center;
-    padding: 0 1em;
-  }
-  
-  .banner-right img {
-    width: auto;
-    height: auto;
-  }
-  
-  .stats-box {
-    background-color: #eeeeee;
-    border-radius: 10px;
-    display: flex;
-    justify-content: space-around;
-  }
-  
-  .stat-item {
-    display: flex;
-    align-items: center;
-  }
-  
-  .stat-item i {
-    margin-right: 8px;
-  }
-  
-  .stat-item p {
-    margin: 0;
-    color: #0e0e23;
-    font-family: inherit;
-    
-  }
-  
-  .stat-item h5 {
-    margin: 0;
-    color: #0e0e23;
-    font-family: inherit;
-  
-  }
+.banner-header {
+  color: #0E0E23;
+  display: block;
+  padding: 1em;
+  position: relative;
+  border-bottom: 1px solid #f0f3f6;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
 
-  .my-35 {
-    margin-top: 1em !important;
-    margin-bottom: 1.5em !important;
-    border: 0 !important;
-  }
-  </style>
-  
+.banner-body {
+  padding: 1em;
+  display: flex;
+  justify-content: space-between;
+}
+
+.banner-left {
+  flex: 1;
+  padding: 0 1em;
+}
+
+.info-block {
+  margin-bottom: 20px;
+  line-height: 1.8em;
+}
+
+hr {
+  margin: 20px 0;
+  border: none;
+  border-top: 1px solid #dee2e6;
+}
+
+.banner-right {
+  flex: 1;
+  text-align: center;
+  padding: 0 1em;
+}
+
+.banner-right img {
+  width: auto;
+  height: auto;
+}
+
+.stats-box {
+  background-color: #eeeeee;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+}
+
+.stat-item i {
+  margin-right: 8px;
+}
+
+.stat-item p {
+  margin: 0;
+  color: #0e0e23;
+}
+
+.stat-item h5 {
+  margin: 0;
+  color: #0e0e23;
+}
+
+/* Visszaállított badge-dot színek */
+.badge-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.bg-success {
+  background-color: #198754; /* Zöld */
+}
+
+.bg-warning {
+  background-color: #ffc107; /* Sárga */
+}
+</style>

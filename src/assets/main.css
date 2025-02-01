@@ -11,3 +11,45 @@
   background: #E4E7F1 !important;
 }
 
+button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+  border: none;
+}
+
+button.primary {
+  background-color: #4A90E2;
+  color: white;
+}
+
+button.primary:hover {
+  background-color: #357ABD;
+}
+
+button.secondary {
+  background-color: #F5A623;
+  color: white;
+}
+
+button.secondary:hover {
+  background-color: #E08E12;
+}
+
+button.danger {
+  background-color: #E74C3C;
+  color: white;
+}
+
+button.danger:hover {
+  background-color: #C0392B;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 4px 6px 8px rgba(0, 0, 0, 0.15);
+}
+

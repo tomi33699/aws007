@@ -38,9 +38,19 @@ export default {
     let refreshInterval = null;
 
     const chartSeries = ref([
-      { name: "PowerP", data: [], color: "#5B51BF" },
-      { name: "Irrad", data: [], color: "#FAC107" },
-    ]);
+  { name: "PowerP", data: [], color: "#5B51BF" },
+  { name: "Irrad", data: [], color: "#FAC107" },
+]);
+
+// Biztosítsd, hogy mindig legyen legalább egy üres adatsor:
+const ensureChartDataStructure = () => {
+  if (!chartSeries.value[0] || !Array.isArray(chartSeries.value[0].data)) {
+    chartSeries.value[0] = { name: "PowerP", data: [], color: "#5B51BF" };
+  }
+  if (!chartSeries.value[1] || !Array.isArray(chartSeries.value[1].data)) {
+    chartSeries.value[1] = { name: "Irrad", data: [], color: "#FAC107" };
+  }
+};
 
     // ApexChart beállítások
     const chartOptions = ref({
@@ -87,40 +97,62 @@ export default {
 
     // **📌 Történelmi adatok betöltése**
     const fetchHistoricalData = async () => {
-      try {
-        const response = await fetchBukkRawData(selectedDate.value);
-        if (!response || response.length === 0) {
-          chartSeries.value[0].data = [];
-          chartSeries.value[1].data = [];
-          return;
-        }
+  try {
+    const response = await fetchBukkRawData(selectedDate.value);
+    if (!Array.isArray(response) || response.length === 0) {
+      console.warn("[fetchHistoricalData] Nincs adat erre a dátumra:", selectedDate.value);
+      chartSeries.value[0].data = [];
+      chartSeries.value[1].data = [];
+      return;
+    }
 
-        chartSeries.value[0].data = response.map((item) => ({
-          x: new Date(item.time).getTime(),
-          y: Math.abs(item.powerp !== undefined ? parseFloat(item.powerp.toFixed(2)) : 0), // **⬅️ Abszolút érték**
-        }));
+    // **Mezők validálása**: Ellenőrizzük, hogy az adatok minden szükséges mezővel rendelkeznek-e
+    const cleanedData = response.filter(item => 
+      item && typeof item === 'object' && 'time' in item && 'powerp' in item && 'irrad' in item
+    );
 
-        chartSeries.value[1].data = response.map((item) => ({
-          x: new Date(item.time).getTime(),
-          y: item.irrad !== undefined ? parseFloat(item.irrad.toFixed(2)) : 0,
-        }));
+    if (cleanedData.length === 0) {
+      console.warn("[fetchHistoricalData] Nincs megfelelő formátumú adat:", response);
+      chartSeries.value[0].data = [];
+      chartSeries.value[1].data = [];
+      return;
+    }
 
-        updateLastValues();
-      } catch (error) {
-        console.error("Error fetching Bükk data:", error);
-      }
-    };
+    chartSeries.value[0].data = cleanedData.map((item) => ({
+      x: new Date(item.time).getTime(),
+      y: Math.abs(parseFloat(item.powerp.toFixed(2))),
+    }));
+
+    chartSeries.value[1].data = cleanedData.map((item) => ({
+      x: new Date(item.time).getTime(),
+      y: parseFloat(item.irrad.toFixed(2)),
+    }));
+
+    updateLastValues();
+  } catch (error) {
+    console.error("[fetchHistoricalData] Hiba történt az adatlekérés közben:", error);
+  }
+};
+
+
 
     // **📌 Legutóbbi értékek frissítése**
     const updateLastValues = () => {
-      if (chartSeries.value[0].data.length > 0) {
-        lastPowerP.value = chartSeries.value[0].data[chartSeries.value[0].data.length - 1].y;
-      }
-      if (chartSeries.value[1].data.length > 0) {
-        lastIrrad.value = chartSeries.value[1].data[chartSeries.value[1].data.length - 1].y;
-      }
-      lastUpdated.value = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-    };
+  lastPowerP.value = chartSeries.value[0].data.length
+    ? chartSeries.value[0].data[chartSeries.value[0].data.length - 1].y
+    : "-";
+
+  lastIrrad.value = chartSeries.value[1].data.length
+    ? chartSeries.value[1].data[chartSeries.value[1].data.length - 1].y
+    : "-";
+
+  lastUpdated.value = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+};
+
 
     onMounted(() => {
       fetchHistoricalData();

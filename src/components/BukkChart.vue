@@ -6,20 +6,10 @@
     </h2>
 
     <label for="date-picker-bukk">Dátumválasztás:</label>
-    <input
-      id="date-picker-bukk"
-      type="date"
-      v-model="selectedDate"
-      @change="fetchBukkDataForDate"
-    />
+    <input id="date-picker-bukk" type="date" v-model="selectedDate" @change="fetchBukkDataForDate" />
 
     <!-- 📈 Chart -->
-    <apexchart
-      type="line"
-      height="400"
-      :options="chartOptions"
-      :series="chartData"
-    />
+    <apexchart type="line" height="400" :options="chartOptions" :series="chartData" />
   </div>
 </template>
 
@@ -66,15 +56,16 @@ export default {
         {
           title: { text: "Real PowerP (kW)" },
           labels: {
-            formatter: (value) => `${value} kW`,
+            formatter: (value) => `${value.toFixed(2)} kW`,
           },
         },
         {
           opposite: true,
           title: { text: "Avg Irrad (W/m²)" },
           labels: {
-            formatter: (value) => `${value} W/m²`,
+            formatter: (value) => `${value.toFixed(2)} W/m²`,
           },
+          min: 0,
         },
       ],
       tooltip: {

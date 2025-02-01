@@ -5,7 +5,7 @@
         <div class="card-icon">
           <i :class="getIconClass(title)"></i>
         </div>
-        <div>
+        <div class="card-text">
           <h4 class="card-title">{{ title }}</h4>
           <p class="card-value">{{ item.value }} <span class="unit">{{ item.unit }}</span></p>
         </div>
@@ -74,62 +74,66 @@ export default {
 <style scoped>
 .card-view {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(1em, 1fr));
-  gap: 1em;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5em;
   margin: 0 1em;
 }
 
 .card {
   display: flex;
   align-items: center;
-  background-color: #ebebeb;
-  padding: 1em;
-  border-radius: 10px;
-  box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: #1A1A2E; /* Sötétebb háttér, illik a dashboardhoz */
+  padding: 1.2em;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   text-align: left;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   cursor: pointer;
 }
 
 .card:hover {
-  transform: translateY(-3px);
-  box-shadow: 4px 6px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
 }
 
 .card-content {
   width: 100%;
   display: grid;
-  grid-template-columns: 0.8fr 1.6fr;
-  align-content: center;
+  grid-template-columns: 0.6fr 1.4fr;
+  align-items: center;
 }
 
 .card-icon {
-  font-size: 1.5em;
-  color: #fac107;
+  font-size: 1.8em;
+  color: #FAC108;
   text-align: center;
-  background: #333333;
-  width: 50%;
-  height: 100%;
-  border-radius: 10px;
+  background: linear-gradient(135deg, #5C52BF, #332D78); /* Modern színátmenet */
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 .card-title {
-  color: #333333;
-  margin: 0;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1em;
+  margin-bottom: 5px;
 }
 
 .card-value {
   font-weight: bold;
-  color: #5b51bf;
-  margin: 5px 0 0;
+  color: #FAC108;
+  font-size: 1.3em;
+  margin: 0;
 }
 
 .unit {
   font-size: 0.9em;
-  color: #666;
+  color: #E0E0E0;
   margin-left: 5px;
 }
 </style>

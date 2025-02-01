@@ -18,24 +18,24 @@
       </div>
     </div>
     <div>
-      <BukkRealTime />
-      <BukkMaterializedChart />
+      <DailyPowerChart />
+       <BukkRealTime />
+      <!-- <BukkMaterializedChart />  -->
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import CardView from "../components/CardView.vue";
 import ChartView from "../components/ChartView.vue"; // Import the ChartView component
-import { getPvActualData } from "@/services/apiService";
+import apiService from "@/services/apiService";
 import PVChart from "@/components/PVChart.vue";
 import Banner from "@/components/Banner.vue";
 import CarouselBanner from "@/components/CarouselBanner.vue";
 import Globe from "@/components/Globe.vue";
 import BukkMaterializedChart from "@/components/BukkMaterializedChart.vue";
 import BukkRealTime from "@/components/BukkRealTime.vue";
-
+import DailyPowerChart from "@/components/DailyPowerChart.vue";
 const actualData = ref({
   bukk_prod_actual: 0,
   bukk_irrad_actual: 0,
@@ -45,23 +45,19 @@ const actualData = ref({
   pv_irrad_actual: 0,
   hupx_price_actual: 0,
 });
-
 const isSidebarCollapsed = ref(false);
-
 function handleSidebarToggle(collapsed: boolean) {
   isSidebarCollapsed.value = collapsed;
 }
-
 onMounted(async () => {
   try {
-    const response = await getPvActualData();
+    const response = await apiService.getPvActualData();
     actualData.value = response[0];
   } catch (error) {
     console.error("Error fetching actual data:", error);
   }
 });
 </script>
-
 <style scoped>
 .dashboard-container {
   box-sizing: border-box;
@@ -70,20 +66,16 @@ onMounted(async () => {
   overflow-y: auto; /* Görgethetőség engedélyezése */
   transition: margin-left 0.5s ease; /* Margin animálása */
 }
-
 .dashboard-container.collapsed-sidebar {
   margin-left: 7vw; /* Összecsukott sidebar esetén */
 }
-
 .dashboard-title {
   margin-bottom: auto;
   color: #333;
 }
-
 .chart-section {
   margin-top: auto;
 }
-
 .chart-title {
   margin-bottom: auto;
   color: #333;
@@ -94,16 +86,13 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
-
 .portfolio-container{
   background: white;
   border-radius: 10px;
   box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
 }
-
 .portfolio-container h2{
   padding: 1em;
   text-align: left;
 }
-
 </style>

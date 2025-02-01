@@ -4,7 +4,7 @@ let socket: WebSocket | null = null;
 let isConnected = false;
 
 export const socketData = reactive({
-  bukkData: [] as { timestamp: number; powerp: number; irrad: number }[], 
+  bukkData: [] as { timestamp: number; powerp: number; irrad: number }[],
 });
 
 export function initWebSocket(url: string): void {
@@ -13,31 +13,39 @@ export function initWebSocket(url: string): void {
     return;
   }
 
-  console.log("🔌 WebSocket inicializálás...");
   socket = new WebSocket(url);
 
   socket.onopen = () => {
-    console.log("✅ WebSocket kapcsolat létrejött");
     isConnected = true;
   };
 
   socket.onmessage = (event) => {
     try {
       if (!event.data) {
-        console.error("⚠️ Üres üzenet érkezett!");
+        console.warn("⚠️ Üres WebSocket üzenet érkezett!");
         return;
       }
 
       const message = JSON.parse(event.data);
-      console.log("📡 Új WebSocket üzenet:", message);
+      console.log("📡 WebSocket üzenet:", message);
 
       if (message.event === "data_change" && message.details === "uj_bukk_raw_adat") {
         console.log("✅ Új Bükk adat:", message);
-        socketData.bukkData.push({
-          timestamp: new Date(message.timestamp).getTime(),
-          powerp: message.powerp ? parseFloat(message.powerp.toFixed(2)) : 0,
-          irrad: message.irrad ? parseFloat(message.irrad.toFixed(2)) : 0,
-        });
+
+        if (
+          message.timestamp &&
+          typeof message.timestamp === "string" &&
+          message.powerp !== undefined &&
+          message.irrad !== undefined
+        ) {
+          socketData.bukkData.push({
+            timestamp: new Date(message.timestamp).getTime(),
+            powerp: parseFloat(message.powerp.toFixed(2)),
+            irrad: parseFloat(message.irrad.toFixed(2)),
+          });
+        } else {
+          console.warn("⚠️ Hibás formátumú WebSocket adat:", message);
+        }
       }
     } catch (err) {
       console.error("❌ WebSocket parsing error:", err);
@@ -47,12 +55,17 @@ export function initWebSocket(url: string): void {
   socket.onerror = (error) => {
     console.error("❌ WebSocket hiba:", error);
     isConnected = false;
-    setTimeout(() => initWebSocket(url), 5000); // Újracsatlakozás 5 mp múlva
+    reconnectWebSocket(url);
   };
 
   socket.onclose = () => {
-    console.log("⚠️ WebSocket kapcsolat megszakadt");
+    console.warn("⚠️ WebSocket kapcsolat megszakadt");
     isConnected = false;
-    setTimeout(() => initWebSocket(url), 5000); // Újracsatlakozás 5 mp múlva
+    reconnectWebSocket(url);
   };
+}
+
+function reconnectWebSocket(url: string) {
+  console.log("♻️ Újracsatlakozás 5 mp múlva...");
+  setTimeout(() => initWebSocket(url), 5000);
 }
