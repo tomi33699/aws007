@@ -19,11 +19,11 @@ import { defineProps } from "vue";
 
 const icons = {
   "Aktuális termelés (Bükkábrány) [kW]": "fas fa-bolt", // Solar panel icon
-  "Aktuális tesugárzás (Halmajugra) (kW/m²)": "fas fa-sun", // Sunshine icon
+  "Aktuális tesugárzás (Halmajugra) (W/m²)": "fas fa-sun", // Sunshine icon
   "Aktuális termelés (Halmajugra) (kW)": "fas fa-bolt", // Industry/production icon
-  "Aktuális besugárzás (Bükkábrány) (kW/m²)": "fas fa-sun", // Cloudy sunshine icon
+  "Aktuális besugárzás (Bükkábrány) (W/m²)": "fas fa-sun", // Cloudy sunshine icon
   "Akutális termelés (Portfolio) (kW)": "fas fa-solar-panel", // Lightning bolt for energy
-  "Aktuális besugárzás (Portfolio) (kW/m²)": "fas fa-sun", // Light bulb for irradiation
+  "Aktuális besugárzás (Portfolio) (W/m²)": "fas fa-sun", // Light bulb for irradiation
 /*   "HUPX Price Actual (€/MWh)": "fas fa-euro-sign", // Euro currency icon
  */};
 
@@ -40,9 +40,9 @@ export default {
         "Akutális termelés (Portfolio) (kW)": Math.abs(this.data.pv_prod_actual)?.toFixed(2) || "N/A",
         "Aktuális termelés (Bükkábrány) [kW]": Math.abs(this.data.bukk_prod_actual)?.toFixed(2) || "N/A",
         "Aktuális termelés (Halmajugra) (kW)": this.data.halmaj_prod_actual?.toFixed(2) || "N/A",
-        "Aktuális besugárzás (Portfolio) (kW/m²)": this.data.pv_irrad_actual?.toFixed(2) || "N/A",
-        "Aktuális besugárzás (Halmajugra) (kW/m²)": this.data.bukk_irrad_actual?.toFixed(2) || "N/A",
-        "Aktuális besugárzás (Bükkábrány) (kW/m²)": this.data.halmaj_irrad_actual?.toFixed(2) || "N/A",
+        "Aktuális besugárzás (Portfolio) (W/m²)": this.data.pv_irrad_actual?.toFixed(2) || "N/A",
+        "Aktuális besugárzás (Halmajugra) (W/m²)": this.data.bukk_irrad_actual?.toFixed(2) || "N/A",
+        "Aktuális besugárzás (Bükkábrány) (W/m²)": this.data.halmaj_irrad_actual?.toFixed(2) || "N/A",
 /*         "HUPX Price Actual (€/MWh)": this.data.hupx_price_actual?.toFixed(2) || "N/A",
  */      };
     },
@@ -60,24 +60,22 @@ export default {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 1em 2em;
-  margin: 1em 0;
+  margin: 0 1em;
 }
 
 .card {
   display: flex;
   align-items: center;
-  background-color: #ffffff;
+  background-color: #ebebeb;
   padding: 1em;
   border-radius: 10px;
   box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
   text-align: left;
   transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 4px 6px 10px rgba(0, 0, 0, 0.2);
-}
+
 
 .card-content {
   width: 100%;
@@ -98,7 +96,6 @@ export default {
 }
 
 .card-title {
-
   color: #333333;
   margin: 0;
 }

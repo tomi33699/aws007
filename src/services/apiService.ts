@@ -157,3 +157,45 @@ export async function fetchChartData(type: "bukk" | "halmaj", date: string): Pro
     throw new Error("Ismeretlen típus a chart adatlekéréshez.");
   }
 }
+
+// Bükk napi összesített adatok lekérése
+export async function fetchBukkDailyData(): Promise<any[]> {
+  try {
+    const response = await fetch(`${API_BASE}/bukk_daily_data`);
+    if (!response.ok) {
+      throw new Error(`[fetchBukkDailyData] API request failed with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (!Array.isArray(data)) {
+      console.warn("[fetchBukkDailyData] The API response is not an array:", data);
+      return [];
+    }
+
+    return data;
+  } catch (error) {
+    console.error("[fetchBukkDailyData] Error occurred:", error);
+    throw error;
+  }
+}
+
+// Halmaj napi összesített adatok lekérése
+export async function fetchHalmajDailyData(): Promise<any[]> {
+  try {
+    const response = await fetch(`${API_BASE}/halmaj_daily_data`);
+    if (!response.ok) {
+      throw new Error(`[fetchHalmajDailyData] API request failed with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (!Array.isArray(data)) {
+      console.warn("[fetchHalmajDailyData] The API response is not an array:", data);
+      return [];
+    }
+
+    return data;
+  } catch (error) {
+    console.error("[fetchHalmajDailyData] Error occurred:", error);
+    throw error;
+  }
+}

@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import DashboardPage from "@/pages/DashboardPage.vue";
-import BukkPage from "@/pages/BukkPage.vue";
 import HalmajPage from "@/pages/HalmajPage.vue";
+import Weather from "@/pages/Weather.vue";
 
 const routes = [
   {
@@ -10,9 +10,9 @@ const routes = [
     component: DashboardPage,
   },
   {
-    path: "/bukk",
-    name: "Bukk",
-    component: BukkPage,
+    path: "/weather",
+    name: "Időjárás",
+    component: Weather,
   },
   {
     path: "/halmaj",

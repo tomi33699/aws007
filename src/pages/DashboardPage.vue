@@ -3,16 +3,19 @@
     <h1 class="dashboard-title"></h1>
     <!-- CardView Component -->
     <Globe />
-    <CardView :data="actualData" />
     <div class="banner-section">
-     <Banner />
-     <CarouselBanner />
+      <Banner />
+      <CarouselBanner />
     </div>
-    <!-- ChartView Component -->
-    <div class="chart-section">
-      <h2 class="chart-title"></h2>
-      <PVChart />
-      <ChartView />
+    <div class="portfolio-container">
+      <h2>Portfolio aktuális termelés adatok</h2>
+      <CardView :data="actualData" />
+      <!-- ChartView Component -->
+      <div class="chart-section">
+        <h2 class="chart-title"></h2>
+        <PVChart />
+        <ChartView />
+      </div>
     </div>
     <div>
       <BukkRealTime />
@@ -91,4 +94,16 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
+
+.portfolio-container{
+  background: white;
+  border-radius: 10px;
+  box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.portfolio-container h2{
+  padding: 1em;
+  text-align: left;
+}
+
 </style>

@@ -1,59 +1,129 @@
 <template>
-    <div class="banner-container">
-      <div class="banner-header">
-        <h2>PV Monitoring: Adatfolyamok <span class="green">(Aktív)</span></h2>
-      </div>
-      <div class="banner-body">
-        <div class="banner-left">
-          <div class="info-block">
-            <p><span class="badge-dot bg-success"></span> Total Power</p>
-            <h2>800.88 kW</h2>
-            <div class="info-details">
-              <div>
-                <p>Min <span class="text-danger">648.0</span> <i class="fas fa-sort-down"></i></p>
-              </div>
-              <div>
-                <p>Max <span class="text-success">928.0</span> <i class="fas fa-sort-up"></i></p>
-              </div>
+  <div class="banner-container">
+    <div class="banner-header">
+      <h2>PV Monitoring <span class="green">(Aktív)</span></h2>
+    </div>
+    <div class="banner-body">
+      <div class="banner-left">
+        <div class="info-block">
+          <p><span class="badge-dot bg-success"></span>Hupx ár</p>
+          <h2>{{ hupxPrice.toFixed(2) }} EUR/MWh</h2>
+          <p>Dátum: {{ hupxDate }}</p><h2></h2>
+          <!-- <div class="info-details">
+            <div>
+              <p>Min <span class="text-danger">648.0</span> <i class="fas fa-sort-down"></i></p>
             </div>
-          </div>
-          <hr class="my-35" />
-        
-          <div class="info-block">
-            <p><span class="badge-dot bg-warning"></span> Total Irrad</p>
-            <h2>32.35 kW/m²</h2>
-            <p>1 órás átlag <span class="fw-bold">6.8</span> kW/m²</p>
-          </div>
+            <div>
+              <p>Max <span class="text-success">928.0</span> <i class="fas fa-sort-up"></i></p>
+            </div>
+          </div> -->
         </div>
-        <div class="banner-right">
-          <img src="@/assets/solar-panel.png" alt="Solar Panel" class="banner-img" />
-          <div class="stats-box">
-            <div class="stat-item">
-              <i class="fas fa-battery-full text-success"></i>
-              <div>
-                <p>Capacity</p>
-                <h5>210 kWh</h5>
-              </div>
+        <hr class="my-35" />
+      
+        <div class="info-block">
+          <p><span class="badge-dot bg-warning"></span> Gáz ár TTF</p>
+          <h2>51.11 EUR/MWh</h2>
+          <p>Dátum: {{ hupxDate }}</p><h2></h2>
+        </div>
+      </div>
+      <div class="banner-right">
+        <img src="@/assets/solar-panel.png" alt="Solar Panel" class="banner-img" />
+        <div class="stats-box">
+          <div class="stat-item">
+            <i class="fas fa-solar-panel text-success"></i>
+            <div>
+              <p>Napi termelés</p>
+              <h5>{{ dailyPortfolioPower }} kWh</h5>
             </div>
-            <div class="stat-item">
-              <i class="fas fa-solar-panel text-success"></i>
-              <div>
-                <p>Yield</p>
-                <h5>178 kWh</h5>
-              </div>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-battery-full text-success"></i>
+            <div>
+              <p>Havi termelés</p>
+              <h5>{{ monthlyPortfolioPower }} kWh</h5>            
             </div>
           </div>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script>
-  export default {
-    name: "Banner",
-  };
-  </script>
-  
+  </div>
+</template>
+
+<script>
+import { fetchBukkDailyData, fetchHalmajDailyData, getHupxData } from "@/services/apiService";
+
+export default {
+  name: "Banner",
+  data() {
+    return {
+      hupxPrice: 0,
+      hupxDate: "",
+      dailyPortfolioPower: 0, // Napi összesített termelés
+      monthlyPortfolioPower: 0, // Havi összesített termelés
+    };
+  },
+  async mounted() {
+    await this.fetchHupxPrice();
+    await this.fetchPortfolioPower();
+  },
+  methods: {
+    async fetchHupxPrice() {
+      try {
+        console.log("Fetching HUPX data...");
+        
+        const hupxData = await getHupxData();
+        console.log("HUPX Data API response:", hupxData);
+        
+        if (Array.isArray(hupxData) && hupxData.length > 0) {
+          const latestDate = hupxData[hupxData.length - 1].date;
+          const avgPrice = hupxData
+            .filter(entry => entry.date === latestDate)
+            .reduce((sum, entry) => sum + entry.price, 0) / hupxData.filter(entry => entry.date === latestDate).length;
+          
+          this.hupxPrice = parseFloat(avgPrice.toFixed(2));
+          this.hupxDate = latestDate;
+        }
+      } catch (error) {
+        console.error("Error fetching HUPX price:", error);
+      }
+    },
+
+    async fetchPortfolioPower() {
+      try {
+        console.log("Fetching daily portfolio power data...");
+        
+        const bukkDaily = await fetchBukkDailyData();
+        const halmajDaily = await fetchHalmajDailyData();
+        
+        const today = new Date().toISOString().split("T")[0]; // Aktuális dátum YYYY-MM-DD formátumban
+        const currentMonth = today.slice(0, 7); // Aktuális hónap YYYY-MM formátumban
+
+        // Napi teljesítmény számítása
+        const bukkToday = bukkDaily.find(entry => entry.date === today)?.daily_powerp || 0;
+        const halmajToday = halmajDaily.find(entry => entry.date === today)?.daily_powerp || 0;
+        this.dailyPortfolioPower = (bukkToday + halmajToday).toFixed(2);
+
+        // Havi teljesítmény számítása
+        const bukkMonthly = bukkDaily
+          .filter(entry => entry.date.startsWith(currentMonth))
+          .reduce((sum, entry) => sum + entry.daily_powerp, 0);
+
+        const halmajMonthly = halmajDaily
+          .filter(entry => entry.date.startsWith(currentMonth))
+          .reduce((sum, entry) => sum + entry.daily_powerp, 0);
+
+        this.monthlyPortfolioPower = (bukkMonthly + halmajMonthly).toFixed(2);
+
+        console.log("Daily Portfolio Power:", this.dailyPortfolioPower);
+        console.log("Monthly Portfolio Power:", this.monthlyPortfolioPower);
+      } catch (error) {
+        console.error("Error fetching portfolio power data:", error);
+      }
+    }
+  }
+};
+</script>
+
   <style scoped>
   .banner-container {
     background-color: #ffffff;

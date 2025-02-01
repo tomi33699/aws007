@@ -1,16 +1,53 @@
-<template>
+  <template>
     <div class="chart-view">
-      <h2>PV Chart</h2>
-      <label for="date-picker-pv">Choose a date:</label>
-      <input
-        id="date-picker-pv"
-        type="date"
-        v-model="selectedDate"
-        @change="handleDateChange"
-      />
+      <div class="controls">
+        <div class="date-container">
+          <input
+            id="date-picker-pv"
+            type="date"
+            v-model="selectedDate"
+            @change="handleDateChange"
+          />
+        </div>
+        
+        <div class="last-update-time">
+          <span>Utolsó adat: </span>
+          <strong>{{ lastUpdateTime || 'N/A' }}</strong>
+        </div>
+        <div class="interval-buttons">
+          <button 
+            @click="setNewInterval(1)" 
+            :class="{ active: selectedInterval === 1 }"
+          >
+            1 min
+          </button>
+          <button 
+            @click="setNewInterval(5)" 
+            :class="{ active: selectedInterval === 5 }"
+          >
+            5 min
+          </button>
+          <button 
+            @click="setNewInterval(15)" 
+            :class="{ active: selectedInterval === 15 }"
+          >
+            15 min
+          </button>
+        </div>
+
+        <div class="time-range-buttons">
+          <button @click="setTimeRange(1)" :class="{ active: selectedRange === 1 }">1 day</button>
+          <button @click="setTimeRange(3)" :class="{ active: selectedRange === 3 }">3 day</button>
+          <button @click="setTimeRange(7)" :class="{ active: selectedRange === 7 }">1 week</button>
+        </div>
+
+  <button class="export-btn" @click="showExportDialog = true">📤 Export</button>
+      </div>
+
       <div v-if="isLoading" class="loading-overlay">
         <span class="loader"></span>
       </div>
+
       <div v-else>
         <apexchart
           v-if="chartData.length > 0"
@@ -19,13 +56,46 @@
           :options="chartOptions"
           :series="chartData"
         />
-        <p v-else>No data available for the selected date.</p>
+        <p v-else>Nincs elérhető adat a kiválasztott napra.</p>
       </div>
     </div>
+
+    <div v-if="showExportDialog" class="export-dialog-overlay">
+    <div class="export-dialog">
+      <h3 class="export-title">📤 Exportálás</h3>
+
+      <div class="export-form">
+        <div class="export-field">
+          <label>Keletkezési dátum:</label>
+          <input type="date" v-model="exportStartDate" class="export-input">
+        </div>
+
+        <div class="export-field">
+          <label>Végdátum:</label>
+          <input type="date" v-model="exportEndDate" class="export-input">
+        </div>
+
+        <div class="export-field">
+          <label>Intervallum:</label>
+          <select v-model="exportInterval" class="export-select">
+            <option value="1">1 perc</option>
+            <option value="5">5 perc</option>
+            <option value="15">15 perc</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="export-actions">
+        <button @click="showExportDialog = false" class="cancel-btn">❌ Bezárás</button>
+        <button @click="exportData" class="export-btn">📥 Exportálás</button>
+      </div>
+    </div>
+  </div>
+
   </template>
 
   <script>
-  import { ref, onMounted } from "vue";
+  import { ref, onMounted, watch } from "vue";
   import VueApexCharts from "vue3-apexcharts";
   import { fetchHalmajData, fetchBukkData } from "@/services/apiService";
 
@@ -34,14 +104,22 @@
       apexchart: VueApexCharts,
     },
     setup() {
-      const selectedDate = ref(new Date().toISOString().split("T")[0]); // Default to today
+      const selectedDate = ref(new Date().toISOString().split("T")[0]);
+      const selectedInterval = ref(1);
+      const selectedRange = ref(1);
+      const lastUpdateTime = ref("");
       const chartData = ref([]);
       const isLoading = ref(false);
+      const showExportDialog = ref(false);
+      const exportStartDate = ref(new Date().toISOString().split("T")[0]);
+      const exportEndDate = ref(new Date().toISOString().split("T")[0]);
+      const exportInterval = ref(1);
 
       const chartOptions = ref({
         chart: {
           type: "line",
-          zoom: { enabled: false },
+          zoom: { enabled: true, allowMouseWheelZoom: false },
+          toolbar: { tools: { zoom: false, zoomin: false, zoomout: false, pan: false, reset: true } },
           animations: {
             enabled: true,
             easing: "easeinout",
@@ -50,157 +128,351 @@
         },
         xaxis: {
           type: "datetime",
-          categories: [],
           labels: {
-            formatter: (value) => {
-              const date = new Date(value);
-              return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-            },
+            formatter: (value) => new Date(value).toLocaleTimeString("hu-HU", { hour: "2-digit", minute: "2-digit" }),
           },
         },
         yaxis: [
           {
-            title: { text: "Sum Real PowerP (kW)" },
+            title: { text: "Portfólió aktuális termelés (kW)" },
             labels: {
-              formatter: (value) => `${value} kW`,
+              formatter: (value) => `${value.toFixed(2)} kW`,
             },
           },
           {
-            
             opposite: true,
-            title: { text: "Sum Avg Irrad (kW/m²)" },
+            title: { text: "Portfólió aktuális besugárzás (W/m²)" },
             labels: {
-              formatter: (value) => `${value} kW/m²`,
+              formatter: (value) => `${value.toFixed(2)} W/m²`,
             },
           },
         ],
-        legend: {
-          show: true,
-          markers: {
-            width: 12,
-            height: 12,
-          },
-        },
-        tooltip: {
-          shared: true,
-          intersect: false,
-        },
       });
 
-      const fetchPVDataForDate = async () => {
-        isLoading.value = true;
-        try {
-          const [halmajResponse, bukkResponse] = await Promise.all([
-            fetchHalmajData(selectedDate.value),
-            fetchBukkData(selectedDate.value),
-          ]);
 
-          if ((!halmajResponse || halmajResponse.length === 0) && (!bukkResponse || bukkResponse.length === 0)) {
-            console.warn("No data found for the selected date.");
-            chartData.value = [];
-          } else {
-            const summedData = halmajResponse.map((halmajItem, index) => {
-              const bukkItem = bukkResponse[index] || { real_powerp: 0, avg_irrad: 0 };
+   const aggregateData = (data, interval) => {
+      if (interval === 1) return data;
+      const aggregated = [];
+      for (let i = 0; i < data.length; i += interval) {
+        const slice = data.slice(i, i + interval);
+        const avgPower = slice.reduce((sum, item) => sum + item.sum_real_powerp, 0) / slice.length;
+        const avgIrrad = slice.reduce((sum, item) => sum + item.sum_avg_irrad, 0) / slice.length;
+        aggregated.push({ x: new Date(slice[0].bucket).getTime(), y: avgPower, yIrrad: avgIrrad });
+      }
+      return aggregated;
+    };
+
+      const setNewInterval = (interval) => {
+        selectedInterval.value = interval;
+        fetchPVDataForRange();
+      };
+
+      const setTimeRange = (days) => {
+        selectedRange.value = days;
+        fetchPVDataForRange();
+      };
+
+      const fetchPVDataForRange = async () => {
+        isLoading.value = true;
+        let allData = [];
+        try {
+          for (let i = 0; i < selectedRange.value; i++) {
+            let date = new Date(selectedDate.value);
+            date.setDate(date.getDate() - i);
+            let formattedDate = date.toISOString().split("T")[0];
+            const [halmajResponse, bukkResponse] = await Promise.all([
+              fetchHalmajData(formattedDate, selectedInterval.value),
+              fetchBukkData(formattedDate, selectedInterval.value),
+            ]);
+
+            let data = halmajResponse.map((halmajItem, index) => {
+              const bukkItem = bukkResponse[index] || {};
               return {
                 bucket: halmajItem.bucket,
-                sum_real_powerp: parseFloat((halmajItem.real_powerp + bukkItem.real_powerp).toFixed(2)),
-                sum_avg_irrad: parseFloat((halmajItem.avg_irrad + bukkItem.avg_irrad).toFixed(2)),
+                sum_real_powerp: (halmajItem.real_powerp || 0) + (bukkItem.real_powerp || 0),
+                sum_avg_irrad: (halmajItem.avg_irrad || 0) + (bukkItem.avg_irrad || 0),
               };
             });
-
-            chartData.value = [
-              {
-                name: "Sum Real PowerP",
-                type: "line",
-                color: "#5B51BF", // Termelés színe
-                data: summedData.map((item) => ({
-                  x: new Date(item.bucket).getTime(),
-                  y: item.sum_real_powerp,
-                })),
-              },
-              {
-                name: "Sum Avg Irrad",
-                type: "line",
-                color: "#FAC107", // Irradiáció színe
-                data: summedData.map((item) => ({
-                  x: new Date(item.bucket).getTime(),
-                  y: item.sum_avg_irrad,
-                })),
-              },
-            ];
+            allData = [...data, ...allData];
           }
-        } catch (error) {
-          console.error("Error fetching PV data:", error);
+
+          if (allData.length > 0) {
+            lastUpdateTime.value = new Date(allData[allData.length - 1].bucket).toLocaleString("hu-HU", { 
+              month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" 
+            });
+          }
+          
+          chartData.value = [
+            {
+              name: "Portfólió aktuális termelés (kW)",
+              type: "line",
+              color: "#5B51BF",
+              data: allData.map(item => ({
+                x: new Date(item.bucket).getTime(),
+                y: item.sum_real_powerp,
+              })),
+            },
+            {
+              name: "Portfólió aktuális besugárzás (W/m²)",
+              type: "line",
+              color: "#FAC107",
+              data: allData.map(item => ({
+                x: new Date(item.bucket).getTime(),
+                y: item.sum_avg_irrad,
+              })),
+            },
+          ];
         } finally {
           isLoading.value = false;
         }
       };
 
-      onMounted(fetchPVDataForDate);
+      const exportCSVData = () => {
+        let csvContent = "Időpont;Termelés (kW);Besugárzás (W/m²)\n";
+        chartData.value[0].data.forEach((point, index) => {
+          const timestamp = new Date(point.x).toLocaleString("hu-HU", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+          });
+          csvContent += `${timestamp};${point.y.toFixed(2)};${chartData.value[1].data[index].y.toFixed(2)}\n`;
+        });
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute("download", `export_${exportStartDate.value}_${exportEndDate.value}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+
+      const exportData = () => {
+        exportCSVData();
+        showExportDialog.value = false;
+      };
+
+
+      watch(selectedDate, () => {
+        fetchPVDataForRange();
+      });
+
+      onMounted(fetchPVDataForRange);
 
       return {
         selectedDate,
+        selectedInterval,
+        selectedRange,
+        lastUpdateTime,
         chartData,
         chartOptions,
         isLoading,
-        handleDateChange: fetchPVDataForDate,
+        setNewInterval,
+        setTimeRange,
+        fetchPVDataForRange,
+        showExportDialog,
+        exportStartDate,
+        exportEndDate,
+        exportInterval,
+        exportData,
       };
     },
   };
   </script>
 
-  <style scoped>
-  .chart-view {
-    padding: 1em;
-    position: relative;
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
-  }
 
-  h2 {
-    margin-bottom: 1em;
-    color: #333333;
-  }
+    <style scoped>
+    .chart-view {
+      padding: 0 1em;
+      position: relative;
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
+      text-align: left;
+    }
 
-  label {
-    margin-right: 10px;
-  }
+    h2 {
+      margin-bottom: 1em;
+      color: #333333;
+    }
 
-  input[type="date"] {
-    margin-bottom: 20px;
-    padding: 5px;
-    font-size: 16px;
-  }
+    label {
+      margin-right: 10px;
+    }
 
-  .loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    input[type="date"] {
+      padding: 5px;
+      font-size: 16px;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(255, 255, 255, 0.8);
+      min-height: 250px ;
+      z-index: 10;
+    }
+
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #007bff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+
+  .controls {
     display: flex;
+    padding: 1em 0;
     align-items: center;
-    justify-content: center;
-    background-color: rgba(255, 255, 255, 0.8);
-    z-index: 10;
+    gap: 15px;
+    margin-bottom: 10px;
+    justify-content: space-between;
   }
 
-  .loader {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #007bff;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
+  .interval-buttons button {
+    background-color: #f3f3f3;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    cursor: pointer;
   }
 
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
+  .interval-buttons button.active {
+    background-color: #007bff;
+    color: white;
   }
-  </style>
+
+  .export-btn {
+    background-color: #fac107;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 5px;
+  }
+
+  .time-range-buttons button {
+    background-color: #f3f3f3;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  .time-range-buttons button.active {
+    background-color: #007bff;
+    color: white;
+  }
+  .export-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: black;
+    color: white;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+
+  .export-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.export-dialog {
+  background: #ffffff;
+  color: #333;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  width: 320px;
+  text-align: center;
+}
+
+.export-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.export-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.export-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.export-input, .export-select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.export-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.export-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.export-btn:hover {
+  background-color: #0056b3;
+}
+
+.cancel-btn {
+  background-color: #ff4d4d;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.cancel-btn:hover {
+  background-color: #cc0000;
+}
+    </style>
