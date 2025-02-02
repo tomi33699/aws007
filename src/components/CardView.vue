@@ -76,14 +76,14 @@ export default {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5em;
-  margin: 0 1em;
+  margin: 1em;
 }
 
 .card {
   display: flex;
   align-items: center;
   background-color: #1A1A2E; /* Sötétebb háttér, illik a dashboardhoz */
-  padding: 1.2em;
+  padding: 1em;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   text-align: left;
@@ -135,5 +135,21 @@ export default {
   font-size: 0.9em;
   color: #E0E0E0;
   margin-left: 5px;
+}
+
+
+@media screen and (max-width: 768px) {
+ .card-view{
+  margin: .5em;
+  grid-template-columns: repeat(2, 1fr);
+  gap: .5em;
+}
+.card-content{
+  grid-template-columns: 1fr;
+  text-align: center;
+ }
+ .card-icon{
+  margin: auto;
+ }
 }
 </style>

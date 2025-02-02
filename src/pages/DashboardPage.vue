@@ -19,8 +19,12 @@
     </div>
     <div>
       <DailyPowerChart />
-       <BukkRealTime />
-      <!-- <BukkMaterializedChart />  -->
+    </div>
+    <div>
+      <BukkRealTime />
+    </div>
+    <div>
+      <BalancingChart />
     </div>
   </div>
 </template>
@@ -36,6 +40,7 @@ import Globe from "@/components/Globe.vue";
 import BukkMaterializedChart from "@/components/BukkMaterializedChart.vue";
 import BukkRealTime from "@/components/BukkRealTime.vue";
 import DailyPowerChart from "@/components/DailyPowerChart.vue";
+import BalancingChart from "@/components/BalancingChart.vue";
 const actualData = ref({
   bukk_prod_actual: 0,
   bukk_irrad_actual: 0,
@@ -63,36 +68,56 @@ onMounted(async () => {
   box-sizing: border-box;
   padding: 0em 1em;
   display: block;
-  overflow-y: auto; /* Görgethetőség engedélyezése */
-  transition: margin-left 0.5s ease; /* Margin animálása */
+  overflow-y: auto;
+  /* Görgethetőség engedélyezése */
+  transition: margin-left 0.5s ease;
+  /* Margin animálása */
 }
+
 .dashboard-container.collapsed-sidebar {
-  margin-left: 7vw; /* Összecsukott sidebar esetén */
+  margin-left: 7vw;
+  /* Összecsukott sidebar esetén */
 }
+
 .dashboard-title {
   margin-bottom: auto;
   color: #333;
 }
+
 .chart-section {
   margin-top: auto;
 }
+
 .chart-title {
   margin-bottom: auto;
   color: #333;
 }
-.banner-section{
+
+.banner-section {
   margin: 1em 0;
   gap: 1em;
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
-.portfolio-container{
+
+.portfolio-container {
   background: white;
   border-radius: 10px;
   box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
 }
-.portfolio-container h2{
+
+.portfolio-container h2 {
   padding: 1em;
   text-align: left;
+}
+
+
+@media screen and (max-width: 768px) {
+ .dashboard-container{
+  padding: 0;
+ } 
+ .banner-section{
+  grid-template-columns: 1fr;
+ }
 }
 </style>

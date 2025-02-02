@@ -1,45 +1,80 @@
 <template>
-  <div class="sidebar" :class="{ collapsed: isSidebarCollapsed }">
-    <!-- Logo & Sidebar Toggle -->
-    <div class="logo-container" @click="toggleSidebar">
-      <i class="logo-icon fa fa-bolt"></i>
-      <transition name="fade">
-        <h2 v-if="!isSidebarCollapsed" class="logo-text">EnergyForce</h2>
-      </transition>
+  <div>
+    <div class="mobile-menu" v-if="isMobile">
+      <button @click="toggleMobileMenu" class="menu-button">
+        <i class="fa fa-bars"></i>
+      </button>
     </div>
-    <!-- Menü elemek -->
-    <ul class="menu">
-      <li v-for="menu in menus" :key="menu.path" class="menu-item">
-        <router-link :to="menu.path" active-class="active">
-          <i :class="['fa', menu.icon]"></i>
-          <transition name="fade">
-            <span v-if="!isSidebarCollapsed">{{ menu.label }}</span>
-          </transition>
-        </router-link>
-      </li>
-    </ul>
-    <!-- Kijelentkezés gomb -->
-    <button class="sign-out-button" @click="signOut">
-      <i class="fa fa-sign-out-alt"></i>
-      <transition name="fade">
-        <span v-if="!isSidebarCollapsed">Kijelentkezés</span>
-      </transition>
-    </button>
+    <div class="sidebar" :class="{ collapsed: isSidebarCollapsed, 'mobile-visible': isMobileMenuOpen }">
+      <!-- Logo & Sidebar Toggle -->
+      <div class="logo-container" @click="toggleSidebar">
+        <i class="logo-icon fa fa-bolt"></i>
+        <transition name="fade">
+          <h2 v-if="!isSidebarCollapsed || isMobile" class="logo-text">EnergyForce</h2>
+        </transition>
+      </div>
+      <!-- Menü elemek -->
+      <ul class="menu">
+        <li v-for="menu in menus" :key="menu.path" class="menu-item">
+          <router-link :to="menu.path" active-class="active" @click="closeMobileMenu">
+            <i :class="['fa', menu.icon]"></i>
+            <transition name="fade">
+              <span v-if="!isSidebarCollapsed || isMobile">{{ menu.label }}</span>
+            </transition>
+          </router-link>
+        </li>
+      </ul>
+      <!-- Kijelentkezés gomb -->
+      <button class="sign-out-button" @click="signOut">
+        <i class="fa fa-sign-out-alt"></i>
+        <transition name="fade">
+          <span v-if="!isSidebarCollapsed || isMobile">Kijelentkezés</span>
+        </transition>
+      </button>
+    </div>
   </div>
 </template>
+
 <script setup>
-import { ref, defineEmits } from "vue";
+import { ref, defineEmits, onMounted } from "vue";
 const menus = ref([
   { label: "Dashboard", path: "/", icon: "fa-tachometer-alt" },
   { label: "Időjárás", path: "/weather", icon: "fa-cloud-sun" },
   { label: "Halmaj", path: "/halmaj", icon: "fa-solar-panel" },
 ]);
+
 const isSidebarCollapsed = ref(false);
+const isMobile = ref(false);
+const isMobileMenuOpen = ref(false);
 const emit = defineEmits(["sidebarToggle"]);
+
+
 function toggleSidebar() {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
   emit("sidebarToggle", isSidebarCollapsed.value);
 }
+
+function toggleMobileMenu() {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value;
+}
+
+function closeMobileMenu() {
+  if (isMobile.value) {
+    isMobileMenuOpen.value = false;
+  }
+}
+
+function checkScreenSize() {
+  isMobile.value = window.innerWidth <= 768;
+  if (!isMobile.value) {
+    isMobileMenuOpen.value = false;
+  }
+}
+
+onMounted(() => {
+  checkScreenSize();
+  window.addEventListener("resize", checkScreenSize);
+});
 defineProps(["signOut"]);
 </script>
 <style scoped>
@@ -141,5 +176,42 @@ defineProps(["signOut"]);
 }
 .fade-enter, .fade-leave-to {
   opacity: 0;
+}
+
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: .5em;
+  right: .5em;
+  z-index: 1000;
+  background: #fac108;
+  border-radius: 12px;
+}
+
+.menu-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+@media screen and (max-width: 768px) {
+  .sidebar {
+    width: 60vw;
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    z-index: 999;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+  .mobile-visible {
+    transform: translateX(0);
+  }
+  .mobile-menu {
+    display: block;
+  }
 }
 </style>

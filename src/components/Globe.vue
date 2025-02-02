@@ -156,7 +156,8 @@ beforeUnmount() {
     },
     getChartOptions(labels) {
       return {
-        chart: { toolbar: { show: false }, },
+        chart: { toolbar: { show: false }, zoom: {enabled: false}, allowMouseWheelZoom: {enabled: false} },
+  
         stroke: { curve: "smooth", width: 3 },
         markers: { size: 1 },
         colors: ["#FFA500", "#00BFFF", "#808080"],
@@ -212,7 +213,7 @@ beforeUnmount() {
 </script>
 <style scoped>
 .globe-container {
-  height: 400px;
+  min-height: 25em;
   margin: 1em 0;
   position: relative;
   border-radius: 10px;
@@ -323,5 +324,24 @@ canvas {
 }
 .globe-container.sidebar-open {
   width: calc(100% - 1em); /* Példa: a sidebar szélessége */
+}
+
+
+@media screen and (max-width: 768px) {
+  .globe-container{
+    margin-top: 0;
+    border-radius: 0 0 12px 12px;
+    height: 100%;
+  }
+  .overlay{
+    flex-direction: column;
+  }
+  .data-column{
+    width: 90%;
+    margin: auto;
+  }
+  .update-container{
+    display: none;
+  }
 }
 </style>

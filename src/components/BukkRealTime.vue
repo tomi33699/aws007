@@ -182,6 +182,7 @@ const ensureChartDataStructure = () => {
 
 <style scoped>
 .chart-container {
+  margin: 1em 0;
   padding: 1em;
   background-color: #ffffff;
   border-radius: 10px;

@@ -212,4 +212,16 @@ hr {
 .bg-warning {
   background-color: #ffc107; /* Sárga */
 }
+
+
+@media screen and (max-width: 768px) {
+ .banner-container{
+  width: 100%;
+  text-align: center;
+ } 
+ .banner-body{
+  display: grid;
+  grid-template-columns: 1fr;
+ }
+}
 </style>

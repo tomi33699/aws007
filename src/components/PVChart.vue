@@ -13,7 +13,7 @@
         <span>Utolsó adat: </span>
         <strong>{{ lastUpdateTime || 'N/A' }}</strong>
       </div>
-      <div class="interval-buttons">
+    <!--   <div class="interval-buttons">
         <button
           @click="setNewInterval(1)"
           :class="{ active: selectedInterval === 1 }"
@@ -32,7 +32,7 @@
         >
           15 min
         </button>
-      </div>
+      </div> -->
       <div class="time-range-buttons">
         <button @click="setTimeRange(1)" :class="{ active: selectedRange === 1 }">1 day</button>
         <button @click="setTimeRange(3)" :class="{ active: selectedRange === 3 }">3 day</button>
@@ -290,6 +290,7 @@ export default {
     border-radius: 10px;
     box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
     text-align: left;
+    margin: 1em 0;
   }
   h2 {
     margin-bottom: 1em;
@@ -393,7 +394,7 @@ color: #333;
 padding: 20px;
 border-radius: 12px;
 box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-width: 320px;
+width: 20em;
 text-align: center;
 }
 .export-title {
@@ -448,5 +449,14 @@ transition: background 0.3s;
 }
 .cancel-btn:hover {
 background-color: #cc0000;
+}
+
+
+
+
+@media screen and (max-width: 768px) {
+ .controls{
+  flex-direction: column;
+}
 }
   </style>

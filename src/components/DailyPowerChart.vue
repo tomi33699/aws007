@@ -16,7 +16,7 @@
     </div>
 
     <input v-model="selectedMonth" type="month" @change="fetchData" class="month-picker" />
-    <apexchart type="bar" :options="chartOptions" :series="series" height="400" width="1600"></apexchart>
+    <apexchart type="bar" :options="chartOptions" :series="series" height="400"></apexchart>
   </div>
 </template>
 
@@ -130,15 +130,11 @@ export default {
 
 <style scoped>
 .chart-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  margin: auto auto 1em auto;
+  padding: 1em;
+  background-color: #ffffff;
+  border-radius: 10px;
+  min-height: 30em;
+  box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .chart-title {
