@@ -1,7 +1,7 @@
 <template>
   <div class="chart-container">
     <h2 class="chart-title">Napi Termelés Oszlopdiagram</h2>
-    
+
     <div class="summary-cards">
       <div class="summary-card">
         <i class="fas fa-solar-panel icon"></i>
@@ -33,7 +33,7 @@ export default {
     const selectedMonth = ref(new Date().toISOString().slice(0, 7));
     const totalBukk = ref(0);
     const totalHalmaj = ref(0);
-    
+
     const series = ref([
       { name: "Bükk", data: [] },
       { name: "Halmaj", data: [] },
@@ -172,5 +172,18 @@ export default {
 .icon {
   font-size: 24px;
   color: #5C52BF;
+}
+
+
+
+@media screen and (max-width: 768px) {
+  .chart-container{
+    text-align: center;
+    padding: 1em 0;
+  }
+  .summary-cards {
+    display: block;
+    justify-items: center;
+  }
 }
 </style>

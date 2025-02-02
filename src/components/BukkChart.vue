@@ -2,7 +2,6 @@
   <div class="chart-view">
     <h2>
       Bükk Chart
-      <p class="last-updated">Utoljára frissítve: {{ lastUpdated }}</p>
     </h2>
 
     <label for="date-picker-bukk">Dátumválasztás:</label>
@@ -38,8 +37,8 @@ export default {
         animations: {
           enabled: true,
           easing: "easeinout",
-          speed: 500,
-          dynamicAnimation: { enabled: true, speed: 1000 },
+          speed: 300,
+          dynamicAnimation: { enabled: true, speed: 1200 },
         },
       },
       xaxis: {
@@ -154,9 +153,7 @@ export default {
 
 h2 {
   color: #333;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  text-align: center;
 }
 
 .last-updated {
@@ -172,5 +169,15 @@ input[type="date"] {
   margin-bottom: 20px;
   padding: 5px;
   font-size: 16px;
+}
+
+
+@media screen and (max-width: 768px) {
+ .chart-view{
+  padding: 1em 0;
+}
+h2{
+  margin-bottom: 1em;
+}
 }
 </style>

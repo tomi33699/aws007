@@ -2,18 +2,13 @@
   <div class="chart-view">
     <div class="controls">
       <div class="date-container">
-        <input
-          id="date-picker-pv"
-          type="date"
-          v-model="selectedDate"
-          @change="handleDateChange"
-        />
+        <input id="date-picker-pv" type="date" v-model="selectedDate" @change="handleDateChange" />
       </div>
       <div class="last-update-time">
         <span>Utolsó adat: </span>
         <strong>{{ lastUpdateTime || 'N/A' }}</strong>
       </div>
-    <!--   <div class="interval-buttons">
+      <!--   <div class="interval-buttons">
         <button
           @click="setNewInterval(1)"
           :class="{ active: selectedInterval === 1 }"
@@ -38,49 +33,43 @@
         <button @click="setTimeRange(3)" :class="{ active: selectedRange === 3 }">3 day</button>
         <button @click="setTimeRange(7)" :class="{ active: selectedRange === 7 }">1 week</button>
       </div>
-<button class="export-btn" @click="showExportDialog = true">📤 Export</button>
+      <button class="export-btn" @click="showExportDialog = true">📤 Export</button>
     </div>
     <div v-if="isLoading" class="loading-overlay">
       <span class="loader"></span>
     </div>
     <div v-else>
-      <apexchart
-        v-if="chartData.length > 0"
-        type="line"
-        height="400"
-        :options="chartOptions"
-        :series="chartData"
-      />
+      <apexchart v-if="chartData.length > 0" type="line" height="400" :options="chartOptions" :series="chartData" />
       <p v-else>Nincs elérhető adat a kiválasztott napra.</p>
     </div>
   </div>
   <div v-if="showExportDialog" class="export-dialog-overlay">
-  <div class="export-dialog">
-    <h3 class="export-title">📤 Exportálás</h3>
-    <div class="export-form">
-      <div class="export-field">
-        <label>Keletkezési dátum:</label>
-        <input type="date" v-model="exportStartDate" class="export-input">
+    <div class="export-dialog">
+      <h3 class="export-title">📤 Exportálás</h3>
+      <div class="export-form">
+        <div class="export-field">
+          <label>Keletkezési dátum:</label>
+          <input type="date" v-model="exportStartDate" class="export-input">
+        </div>
+        <div class="export-field">
+          <label>Végdátum:</label>
+          <input type="date" v-model="exportEndDate" class="export-input">
+        </div>
+        <div class="export-field">
+          <label>Intervallum:</label>
+          <select v-model="exportInterval" class="export-select">
+            <option value="1">1 perc</option>
+            <option value="5">5 perc</option>
+            <option value="15">15 perc</option>
+          </select>
+        </div>
       </div>
-      <div class="export-field">
-        <label>Végdátum:</label>
-        <input type="date" v-model="exportEndDate" class="export-input">
+      <div class="export-actions">
+        <button @click="showExportDialog = false" class="cancel-btn">❌ Bezárás</button>
+        <button @click="exportData" class="export-btn">📥 Exportálás</button>
       </div>
-      <div class="export-field">
-        <label>Intervallum:</label>
-        <select v-model="exportInterval" class="export-select">
-          <option value="1">1 perc</option>
-          <option value="5">5 perc</option>
-          <option value="15">15 perc</option>
-        </select>
-      </div>
-    </div>
-    <div class="export-actions">
-      <button @click="showExportDialog = false" class="cancel-btn">❌ Bezárás</button>
-      <button @click="exportData" class="export-btn">📥 Exportálás</button>
     </div>
   </div>
-</div>
 </template>
 <script>
 import { ref, onMounted, watch } from "vue";
@@ -109,7 +98,8 @@ export default {
         animations: {
           enabled: true,
           easing: "easeinout",
-          speed: 500,
+          speed: 300,
+          dynamicAnimation: { enabled: true, speed: 1200 },
         },
       },
       xaxis: {
@@ -133,47 +123,48 @@ export default {
           },
         },
       ],
+
     });
     const aggregateData = (data, interval) => {
-  if (interval === 1 || data.length === 0) return data; // Ha 1 perces, vagy nincs adat, nincs mit aggregálni
+      if (interval === 1 || data.length === 0) return data; // Ha 1 perces, vagy nincs adat, nincs mit aggregálni
 
-  const aggregated = [];
-  let tempBucket = [];
-  let lastTimestamp = new Date(data[0].bucket).getTime();
+      const aggregated = [];
+      let tempBucket = [];
+      let lastTimestamp = new Date(data[0].bucket).getTime();
 
-  data.forEach((item) => {
-    const currentTimestamp = new Date(item.bucket).getTime();
-    
-    if (currentTimestamp - lastTimestamp < interval * 60 * 1000) {
-      tempBucket.push(item);
-    } else {
+      data.forEach((item) => {
+        const currentTimestamp = new Date(item.bucket).getTime();
+
+        if (currentTimestamp - lastTimestamp < interval * 60 * 1000) {
+          tempBucket.push(item);
+        } else {
+          if (tempBucket.length > 0) {
+            const avgPower = tempBucket.reduce((sum, d) => sum + d.sum_real_powerp, 0) / tempBucket.length;
+            const avgIrrad = tempBucket.reduce((sum, d) => sum + d.sum_avg_irrad, 0) / tempBucket.length;
+            aggregated.push({
+              x: lastTimestamp,
+              y: avgPower,
+              yIrrad: avgIrrad
+            });
+          }
+          tempBucket = [item];
+          lastTimestamp = currentTimestamp;
+        }
+      });
+
+      // Utolsó csoport hozzáadása
       if (tempBucket.length > 0) {
         const avgPower = tempBucket.reduce((sum, d) => sum + d.sum_real_powerp, 0) / tempBucket.length;
         const avgIrrad = tempBucket.reduce((sum, d) => sum + d.sum_avg_irrad, 0) / tempBucket.length;
         aggregated.push({
-          x: lastTimestamp, 
-          y: avgPower, 
+          x: lastTimestamp,
+          y: avgPower,
           yIrrad: avgIrrad
         });
       }
-      tempBucket = [item]; 
-      lastTimestamp = currentTimestamp;
-    }
-  });
 
-  // Utolsó csoport hozzáadása
-  if (tempBucket.length > 0) {
-    const avgPower = tempBucket.reduce((sum, d) => sum + d.sum_real_powerp, 0) / tempBucket.length;
-    const avgIrrad = tempBucket.reduce((sum, d) => sum + d.sum_avg_irrad, 0) / tempBucket.length;
-    aggregated.push({
-      x: lastTimestamp, 
-      y: avgPower, 
-      yIrrad: avgIrrad
-    });
-  }
-
-  return aggregated;
-};
+      return aggregated;
+    };
 
     const setNewInterval = (interval) => {
       selectedInterval.value = interval;
@@ -282,28 +273,32 @@ export default {
   },
 };
 </script>
-  <style scoped>
-  .chart-view {
-    padding: 0 1em;
-    position: relative;
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
-    text-align: left;
-    margin: 1em 0;
-  }
-  h2 {
-    margin-bottom: 1em;
-    color: #333333;
-  }
-  label {
-    margin-right: 10px;
-  }
-  input[type="date"] {
-    padding: 5px;
-    font-size: 16px;
-  }
-  .loading-overlay {
+<style scoped>
+.chart-view {
+  padding: 0 1em;
+  position: relative;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  margin: 1em 0;
+}
+
+h2 {
+  margin-bottom: 1em;
+  color: #333333;
+}
+
+label {
+  margin-right: 10px;
+}
+
+input[type="date"] {
+  padding: 5px;
+  font-size: 16px;
+}
+
+.loading-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -326,9 +321,15 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
+
 .controls {
   display: flex;
   padding: 1em 0;
@@ -337,16 +338,19 @@ export default {
   margin-bottom: 10px;
   justify-content: space-between;
 }
+
 .interval-buttons button {
   background-color: #f3f3f3;
   border: 1px solid #ccc;
   padding: 5px 10px;
   cursor: pointer;
 }
+
 .interval-buttons button.active {
   background-color: #5B51BF;
   color: white;
 }
+
 .export-btn {
   background-color: #fac107;
   border: none;
@@ -355,16 +359,19 @@ export default {
   font-weight: bold;
   border-radius: 5px;
 }
+
 .time-range-buttons button {
   background-color: #f3f3f3;
   border: 1px solid #ccc;
   padding: 5px 10px;
   cursor: pointer;
 }
+
 .time-range-buttons button.active {
   background-color: #5B51BF;
   color: white;
 }
+
 .export-dialog {
   position: fixed;
   top: 50%;
@@ -376,87 +383,103 @@ export default {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 1000;
 }
+
 .export-dialog-overlay {
-position: fixed;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-background: rgba(0, 0, 0, 0.5);
-display: flex;
-align-items: center;
-justify-content: center;
-z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
 }
+
 .export-dialog {
-background: #ffffff;
-color: #333;
-padding: 20px;
-border-radius: 12px;
-box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-width: 20em;
-text-align: center;
+  background: #ffffff;
+  color: #333;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  width: 20em;
+  text-align: center;
 }
+
 .export-title {
-font-size: 1.2em;
-font-weight: bold;
-margin-bottom: 10px;
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
 }
+
 .export-form {
-display: flex;
-flex-direction: column;
-gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
+
 .export-field {
-display: flex;
-flex-direction: column;
-align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
-.export-input, .export-select {
-width: 100%;
-padding: 8px;
-border: 1px solid #ccc;
-border-radius: 6px;
-font-size: 14px;
+
+.export-input,
+.export-select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
 }
+
 .export-actions {
-display: flex;
-justify-content: space-between;
-margin-top: 15px;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
 }
+
 .export-btn {
-background-color: #5B51BF;
-color: white;
-padding: 8px 12px;
-border: none;
-border-radius: 6px;
-cursor: pointer;
-font-weight: bold;
-transition: background 0.3s;
+  background-color: #5B51BF;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
 }
+
 .export-btn:hover {
-background-color: #0056b3;
+  background-color: #0056b3;
 }
+
 .cancel-btn {
-background-color: #ff4d4d;
-color: white;
-padding: 8px 12px;
-border: none;
-border-radius: 6px;
-cursor: pointer;
-font-weight: bold;
-transition: background 0.3s;
+  background-color: #ff4d4d;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
 }
+
 .cancel-btn:hover {
-background-color: #cc0000;
+  background-color: #cc0000;
 }
 
 
 
 
 @media screen and (max-width: 768px) {
- .controls{
-  flex-direction: column;
+  .controls {
+    flex-direction: column;
+  }
+
+  .chart-view {
+    padding: 1em 0;
+  }
 }
-}
-  </style>
+</style>

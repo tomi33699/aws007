@@ -241,6 +241,10 @@ body, html{
     color: white;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
     font-family: 'DM Sans', sans-serif;
+    overflow-y: auto;
+  /* Görgethetőség engedélyezése */
+  transition: margin-left 0.5s ease;
+  /* Margin animálása */
 }
 
 .weather-dashboard-header {
@@ -477,5 +481,36 @@ body, html{
 
 .card-svg-item img {
     width: 80%;
+}
+
+
+
+@media screen and (max-width: 768px) {
+  .cont-container-main{
+    grid-template-columns: 1fr;
+  }
+  .weather-dashboard-header{
+    flex-direction: column;
+    text-align: left;
+  }
+  .search-container{
+    justify-content: start;
+  }
+  .weather-container{
+    flex-direction: column;
+    gap: 1em;
+  }
+  .asda{
+    width: 100%;
+  }
+  .sun-info{
+    display: none;
+  }
+  .sun-info-overlay{
+    display: none;
+  }
+  .forecast-item{
+    width: 45%;
+  }
 }
 </style>

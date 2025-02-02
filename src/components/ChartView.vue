@@ -33,4 +33,15 @@ export default {
   min-width: 0; /* Flex/Grid esetén segít elkerülni a túlnyúlást */
   width: 100%;
 }
+
+
+@media screen and (max-width: 768px) {
+ .chart-container{
+  padding: 0;
+  text-align: center;
+  display: grid;
+  grid-template-columns: 1fr;
+  height: 100%;
+}
+}
 </style>

@@ -61,6 +61,12 @@ const ensureChartDataStructure = () => {
           type: "x",  // 🔥 Csak az X tengelyen
           autoScaleYaxis: false, 
         },
+        animations: {
+          enabled: true,
+          easing: "easeinout",
+          speed: 300,
+          dynamicAnimation: { enabled: true, speed: 1200 },
+        },
         toolbar: {
           tools: {
             zoomin: false, // 🔒 Nem lehet nagyítani görgővel
@@ -208,5 +214,14 @@ input[type="date"] {
 .stats {
   margin: 10px 0;
   font-size: 16px;
+}
+
+
+
+@media screen and (max-width: 768px) {
+  .chart-container{
+    text-align: center;
+    padding: 1em 0;
+  }
 }
 </style>

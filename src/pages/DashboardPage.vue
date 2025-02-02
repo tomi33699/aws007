@@ -1,7 +1,6 @@
 <template>
   <div class="dashboard-container" :class="{ 'collapsed-sidebar': isSidebarCollapsed }">
     <h1 class="dashboard-title"></h1>
-    <!-- CardView Component -->
     <Globe />
     <div class="banner-section">
       <Banner />
@@ -10,7 +9,6 @@
     <div class="portfolio-container">
       <h2>Portfolio aktuális termelés adatok</h2>
       <CardView :data="actualData" />
-      <!-- ChartView Component -->
       <div class="chart-section">
         <h2 class="chart-title"></h2>
         <PVChart />
@@ -118,6 +116,12 @@ onMounted(async () => {
  } 
  .banner-section{
   grid-template-columns: 1fr;
+ }
+ .chart-section{
+  padding: 0;
+ }
+ .chart-title{
+  display: none;
  }
 }
 </style>

@@ -66,7 +66,7 @@ export default {
         animations: {
           enabled: true,
           easing: "easeinout",
-          speed: 700,
+          speed: 300,
           dynamicAnimation: { enabled: true, speed: 1200 },
         },
       },
@@ -98,6 +98,7 @@ export default {
         shared: true,
         intersect: false,
       },
+      colors: ['#FAC108', '#4B42A1']
     });
 
     const fetchData = async () => {
@@ -267,9 +268,19 @@ input[type="date"] {
 
 
 @media screen and (max-width: 768px) {
+  .chart-container{
+    padding: 1em 0;
+    text-align: center;
+  }
  .price-card-container{
+  width: 90%;
+  margin: auto;
+  padding: 1em 0;
   grid-template-columns: 1fr;
   gap: .5em;
+ }
+ h2{
+  display: block;
  }
 }
 </style>

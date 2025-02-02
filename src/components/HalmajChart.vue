@@ -39,7 +39,8 @@ export default {
         animations: {
           enabled: true,
           easing: "easeinout",
-          speed: 500,
+          speed: 300,
+          dynamicAnimation: { enabled: true, speed: 1200 },
         },
       },
       xaxis: {
@@ -147,5 +148,15 @@ input[type="date"] {
   margin-bottom: 20px;
   padding: 5px;
   font-size: 16px;
+}
+
+
+@media screen and (max-width: 768px) {
+ .chart-view{
+  padding: 1em 0;
+}
+h2{
+  margin-bottom: 1em;
+}
 }
 </style>
