@@ -153,7 +153,7 @@ export default {
 
 h2 {
   color: #333;
-  text-align: center;
+ 
 }
 
 .last-updated {
@@ -178,6 +178,7 @@ input[type="date"] {
 }
 h2{
   margin-bottom: 1em;
+  text-align: center;
 }
 }
 </style>

@@ -3,7 +3,7 @@
     <canvas ref="globeCanvas"></canvas>
     <div class="overlay">
       <div class="data-column left">
-        <div class="chart-container">
+        <div class="chart-container glass-card">
           <h2 class="chart-container-h2"> Időjárás előrejelzés (24 órás)<br> <span class="chart-cont-span">Bükkábrány</span></h2>
           <apexchart
             type="line"
@@ -20,7 +20,7 @@
         </button>
       </div>
       <div class="data-column right">
-        <div class="chart-container">
+        <div class="chart-container glass-card">
           <h2 class="chart-container-h2"> Időjárás előrejelzés (24 órás) <br><span class="chart-cont-span">Halmajugra</span> </h2>
           <apexchart
             type="line"
@@ -246,6 +246,14 @@ canvas {
   /
   pointer-events: auto; /* Az overlay kattintható marad */
 }
+.glass-card {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 10px;
+}
+
 .chart-container {
   border-radius: 10px;
   overflow: hidden;
