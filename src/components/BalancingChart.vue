@@ -110,17 +110,17 @@ export default {
           {
             name: 'Up Price',
             type: 'line',
-            data: priceData.map(d => ({ x: new Date(d.date).getTime() + (8 * 15 * 60 * 1000), y: d.up_price }))
+            data: priceData.map(d => ({ x: new Date(d.date).getTime() + (5 * 15 * 60 * 1000), y: d.up_price }))
           },
           {
             name: 'Down Price',
             type: 'line',
-            data: priceData.map(d => ({ x: new Date(d.date).getTime() + (8 * 15 * 60 * 1000), y: d.down_price }))
+            data: priceData.map(d => ({ x: new Date(d.date).getTime() + (5 * 15 * 60 * 1000), y: d.down_price }))
           }
         ];
 
         if (priceData.length > 0) {
-          latestTimestamp.value = new Date(new Date(priceData[priceData.length - 1].date).getTime() + (8 * 15 * 60 * 1000)).toLocaleString("hu-HU", {
+          latestTimestamp.value = new Date(new Date(priceData[priceData.length - 1].date).getTime() + (5 * 15 * 60 * 1000)).toLocaleString("hu-HU", {
             year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit"
           });
           latestUpPrice.value = (priceData[priceData.length - 1].up_price / 1000).toFixed(3);
