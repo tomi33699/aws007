@@ -115,7 +115,7 @@ export default {
           {
             name: 'Down Price',
             type: 'line',
-            data: priceData.map(d => ({ x: new Date(d.date).getTime() + (8 * 15 * 60 * 1000), y: -d.down_price }))
+            data: priceData.map(d => ({ x: new Date(d.date).getTime() + (8 * 15 * 60 * 1000), y: d.down_price }))
           }
         ];
 
