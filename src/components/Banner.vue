@@ -14,7 +14,7 @@
 
         <div class="info-block">
           <p><span class="badge-dot bg-warning"></span> Gáz ár TTF</p>
-          <h2>51.11 EUR/MWh</h2>
+          <h2>55.79 EUR/MWh</h2>
           <p>Dátum: {{ hupxDate }}</p>
         </div>
       </div>

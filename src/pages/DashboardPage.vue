@@ -24,6 +24,9 @@
     <div>
       <BalancingChart />
     </div>
+    <div>
+      <BukkMaterializedChart/>
+    </div>
   </div>
 </template>
 <script setup lang="ts">
