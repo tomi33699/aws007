@@ -18,15 +18,15 @@
     <div>
       <DailyPowerChart />
     </div>
-    <div>
+   <!--  <div>
       <BukkRealTime />
-    </div>
+    </div> -->
     <div>
       <BalancingChart />
     </div>
-    <div>
+    <!-- <div>
       <BukkMaterializedChart/>
-    </div>
+    </div> -->
   </div>
 </template>
 <script setup lang="ts">
