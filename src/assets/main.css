@@ -1,55 +1,83 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
 
-*{
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
 }
 
-
-.app-container{
-  background: #E4E7F1 !important;
+/* 🌟 Alap háttér és elrendezés */
+body {
+  background: #f4f6f9;
 }
 
-button {
-  padding: 10px 16px;
-  border-radius: 8px;
+/* Dashboard konténer */
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* 🟢 Kártyák */
+.card-container {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.card {
+  background: #ffffff;
+  color: #1e293b;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 220px;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 500;
   transition: all 0.3s ease-in-out;
-  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 🌟 Kártya ikonok */
+.card .icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  font-size: 24px;
+  color: white;
+}
+
+.card .icon.blue { background: #4A90E2; }
+.card .icon.yellow { background: #F5A623; }
+.card .icon.green { background: #2ECC71; }
+.card .icon.red { background: #E74C3C; }
+.card .icon.orange { background: #FF9800; }
+
+/* 🌟 Kiemelt kártya */
+.total-card {
+  background: #4A90E2;
+  color: white;
   border: none;
+  font-weight: bold;
 }
 
-button.primary {
-  background-color: #4A90E2;
-  color: white;
-}
-
-button.primary:hover {
-  background-color: #357ABD;
-}
-
-button.secondary {
-  background-color: #F5A623;
-  color: white;
-}
-
-button.secondary:hover {
-  background-color: #E08E12;
-}
-
-button.danger {
-  background-color: #E74C3C;
-  color: white;
-}
-
-button.danger:hover {
-  background-color: #C0392B;
-}
-
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 4px 6px 8px rgba(0, 0, 0, 0.15);
+/* 📊 Chart konténer */
+.chart-container {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
 }
 

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import Sidebar from './components/Sidebar.vue';
+import { onMounted } from "vue";
+import Sidebar from "@/components/Sidebar.vue";
 import { Authenticator } from "@aws-amplify/ui-vue";
 import "@aws-amplify/ui-vue/styles.css";
-import { I18n } from '@aws-amplify/core';
+import "@fortawesome/fontawesome-free/css/all.css"; 
+import { I18n } from "@aws-amplify/core";
 
-// Magyar fordítások konfigurálása
 onMounted(() => {
   I18n.putVocabularies({
     hu: {
@@ -29,49 +29,52 @@ onMounted(() => {
     },
   });
 
-  I18n.setLanguage('hu');
+  I18n.setLanguage("hu");
 });
 </script>
 
 <template>
-  <main class="app-container">
-    <authenticator :hide-sign-up="true">
-      <template v-slot:header>
-        <div class="login-header">
-          <img src="@/assets/logo.svg" alt="EforceApp Logo" class="logo" />
-          <h1 class="app-name">EforceApp</h1>
-        </div>
-      </template>
+  <div class="app-layout">
+    <!-- Bejelentkezési rendszer -->
+    <Authenticator :hide-sign-up="true">
       <template v-slot="{ signOut }">
-        <div class="dashboard-container">
+        <div class="dashboard-layout">
           <Sidebar :signOut="signOut" />
-          <router-view /> <!-- Fontos -->
+          <div class="main-content">
+            <router-view />
+          </div>
         </div>
       </template>
-    </authenticator>
-  </main>
+    </Authenticator>
+  </div>
 </template>
-<style scoped>
-body {
-  margin: 0;
-  font-family: 'Roboto', sans-serif;
-  background-color: #f0f0f0;
-}
 
-.app-container {
+<style scoped>
+/* Alap layout */
+.app-layout {
   height: 100vh;
+  width: 100vw;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f0f0f0;
+  background-color: #f5f7fb;
 }
 
-.dashboard-container {
+/* Fő dashboard felépítés */
+.dashboard-layout {
   display: flex;
-  height: 100vh;
   width: 100%;
+  height: 100vh;
 }
 
+/* Sidebar és tartalom elrendezése */
+.main-content {
+  flex-grow: 1;
+  padding: 1em;
+  overflow-y: auto;
+}
+
+/* Amplify bejelentkezés gomb */
 .amplify-button {
   background-color: #007bff;
   color: white;
@@ -83,6 +86,7 @@ body {
   background-color: #0056b3;
 }
 
+/* Bejelentkezési fejléc */
 .login-header {
   text-align: center;
   margin-bottom: 20px;

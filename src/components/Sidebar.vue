@@ -1,217 +1,231 @@
-<template>
-  <div>
-    <div class="mobile-menu" v-if="isMobile">
-      <button @click="toggleMobileMenu" class="menu-button">
-        <i class="fa fa-bars"></i>
-      </button>
-    </div>
-    <div class="sidebar" :class="{ collapsed: isSidebarCollapsed, 'mobile-visible': isMobileMenuOpen }">
-      <!-- Logo & Sidebar Toggle -->
-      <div class="logo-container" @click="toggleSidebar">
-        <i class="logo-icon fa fa-bolt"></i>
-        <transition name="fade">
-          <h2 v-if="!isSidebarCollapsed || isMobile" class="logo-text">EnergyForce</h2>
-        </transition>
-      </div>
-      <!-- Menü elemek -->
-      <ul class="menu">
-        <li v-for="menu in menus" :key="menu.path" class="menu-item">
-          <router-link :to="menu.path" active-class="active" @click="closeMobileMenu">
-            <i :class="['fa', menu.icon]"></i>
-            <transition name="fade">
-              <span v-if="!isSidebarCollapsed || isMobile">{{ menu.label }}</span>
-            </transition>
-          </router-link>
-        </li>
-      </ul>
-      <!-- Kijelentkezés gomb -->
-      <button class="sign-out-button" @click="signOut">
-        <i class="fa fa-sign-out-alt"></i>
-        <transition name="fade">
-          <span v-if="!isSidebarCollapsed || isMobile">Kijelentkezés</span>
-        </transition>
-      </button>
-    </div>
-  </div>
-</template>
+<script setup lang="ts">
+import { ref, defineEmits } from "vue";
+import { useRoute } from "vue-router";
+import { signOut } from "aws-amplify/auth";
 
-<script setup>
-import { ref, defineEmits, onMounted } from "vue";
+const route = useRoute();
+
 const menus = ref([
-  { label: "Dashboard", path: "/", icon: "fa-tachometer-alt" },
-  { label: "Időjárás", path: "/weather", icon: "fa-cloud-sun" },
-  { label: "Halmaj", path: "/halmaj", icon: "fa-solar-panel" },
+  { label: "Dashboard", path: "/", icon: "fa-sliders-h" },
+  { label: "Weather", path: "/weather", icon: "fa-cloud-sun" },
+  { label: "Blank", path: "/blank", icon: "fa-file" },
+]);
+
+const tools = ref([
+  { label: "Buttons", path: "/buttons", icon: "fa-square" },
+]);
+
+const plugins = ref([
+  { label: "Profile", path: "/profile", icon: "fa-chart-bar" },
 ]);
 
 const isSidebarCollapsed = ref(false);
-const isMobile = ref(false);
-const isMobileMenuOpen = ref(false);
 const emit = defineEmits(["sidebarToggle"]);
 
+const isActive = (path: string) => route.path === path;
 
 function toggleSidebar() {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
   emit("sidebarToggle", isSidebarCollapsed.value);
 }
 
-function toggleMobileMenu() {
-  isMobileMenuOpen.value = !isMobileMenuOpen.value;
-}
-
-function closeMobileMenu() {
-  if (isMobile.value) {
-    isMobileMenuOpen.value = false;
+async function handleSignOut() {
+  if (isSidebarCollapsed.value) return; // Ha össze van csukva, ne fusson le a kijelentkezés
+  try {
+    await signOut();
+  } catch (error) {
+    console.error("Kijelentkezési hiba:", error);
   }
 }
-
-function checkScreenSize() {
-  isMobile.value = window.innerWidth <= 768;
-  if (!isMobile.value) {
-    isMobileMenuOpen.value = false;
-  }
-}
-
-onMounted(() => {
-  checkScreenSize();
-  window.addEventListener("resize", checkScreenSize);
-});
-defineProps(["signOut"]);
 </script>
+
+
+<template>
+  <div class="sidebar" :class="{ collapsed: isSidebarCollapsed }">
+    <div class="sidebar-header" :class="{ sidebarhelp: isSidebarCollapsed }" @click="toggleSidebar">
+      <i class="fa fa-bolt logo-icon"></i>
+      <span v-if="!isSidebarCollapsed" class="logo-text">EforceApp</span>
+    </div>
+    <div class="menu-section">
+      <span v-if="!isSidebarCollapsed" class="section-title">Dashboard</span>
+      <ul class="menu">
+        <li v-for="menu in menus" :key="menu.path" class="menu-item" :class="{ active: isActive(menu.path) }">
+          <router-link :to="menu.path">
+            <i :class="['fa', menu.icon]"></i>
+            <span v-if="!isSidebarCollapsed">{{ menu.label }}</span>
+          </router-link>
+        </li>
+      </ul>
+    </div>
+    <div class="menu-section">
+      <span v-if="!isSidebarCollapsed" class="section-title">Market</span>
+      <ul class="menu">
+        <li v-for="tool in tools" :key="tool.path" class="menu-item" :class="{ active: isActive(tool.path) }">
+          <router-link :to="tool.path">
+            <i :class="['fa', tool.icon]"></i>
+            <span v-if="!isSidebarCollapsed">{{ tool.label }}</span>
+          </router-link>
+        </li>
+      </ul>
+    </div>
+    <div class="menu-section">
+      <span v-if="!isSidebarCollapsed" class="section-title">User</span>
+      <ul class="menu">
+        <li v-for="plugin in plugins" :key="plugin.path" class="menu-item" :class="{ active: isActive(plugin.path) }">
+          <router-link :to="plugin.path">
+            <i :class="['fa', plugin.icon]"></i>
+            <span v-if="!isSidebarCollapsed">{{ plugin.label }}</span>
+          </router-link>
+        </li>
+      </ul>
+    </div>
+    <div class="sidebar-footer">
+  <button class="sign-out-button" @click="handleSignOut">
+    <span v-if="!isSidebarCollapsed">Kijelentkezés</span>
+    <i class="fa fa-sign-out-alt sign-out-icon" :class="{ disable: isSidebarCollapsed }"></i>
+  </button>
+</div>
+  </div>
+</template>
+
 <style scoped>
-/* ===== Alap Sidebar Stílus ===== */
 .sidebar {
-  background-color: #2C2F48;
+  background-color: #222e3c;
   color: white;
-  width: 14vw;
+  width: 250px;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 1vh 1vw;
-  transition: width 0.4s ease-in-out;
-  overflow: hidden;
-  box-shadow: 3px 0px 10px rgba(0, 0, 0, 0.1);
+  padding: 15px 0;
+  transition: width 0.3s;
 }
-/* ===== Összecsukott Sidebar ===== */
+
 .sidebar.collapsed {
-  width: 5vw;
+  width: 80px;
 }
-/* ===== Logo & Sidebar Toggle ===== */
-.logo-container {
+
+.sidebar-header {
   display: flex;
   align-items: center;
-  gap: 1em;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 20px;
   cursor: pointer;
-  padding: 1em 0;
+  justify-content: start;
+}
+.sidebarhelp{
+  justify-content: center;
 }
 .logo-icon {
-  font-size: 1.8em;
-  color: #FAC107;
+  font-size: 24px;
+  color: #3b7ddd;
 }
-.logo-text {
-  font-size: 1.2em;
-  font-weight: bold;
+.logo-text{
+  margin-left: 5px;
 }
-/* ===== Menü Lista ===== */
+
+.menu-section {
+  margin-top: 20px;
+}
+
+.section-title {
+  background: transparent;
+  color: #ced4da;
+  font-size: .9em;
+  padding: 1.5rem 1.5rem .375rem;
+}
+
 .menu {
   list-style: none;
   padding: 0;
-  margin: 2em 0;
+  margin-top: .2em;
 }
+
 .menu-item {
-  padding: 1em;
-  border-radius: 8px;
-  transition: background 0.3s, transform 0.2s;
+  position: relative;
+  padding: 2px 10px;
+  transition: color 0.2s ease-in-out, opacity 0.2s ease-in-out;
+  opacity: 0.6;
+  font-weight: 500;
 }
+
 .menu-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateX(5px);
+  color: #e9ecef;
+  opacity: 1;
 }
+
+.menu-item a {
+  display: flex;
+  align-items: center;
+  color: #ced4da;
+  text-decoration: none;
+  padding: 10px;
+  position: relative;
+}
+
 .menu-item i {
-  font-size: 1.2em;
-  color: #FAC107;
-  margin-right: 0.8em;
+  font-size: 15px;
+  width: 30px;
+  text-align: center;
+  color: #ced4da;
+  margin-right: 5px;
 }
-.menu-item span {
-  font-weight: bold;
-  color: #ffffff;
+.menu-item.active {
+  color: #e9ecef;
+  opacity: 1;
+  background: linear-gradient(90deg, rgba(59, 125, 221, .1), rgba(59, 125, 221, .088) 50%, transparent);
 }
-/* ===== Aktív Menüelem ===== */
-.active {
-  border-radius: 8px;
+
+.menu-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background-color: #3b7ddd;
+  transition: all 0.3s ease-in-out;
 }
-/* ===== Kijelentkezés Gomb ===== */
+
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 20px;
+  text-align: center;
+}
+
 .sign-out-button {
-  background-color: #ff4d4d;
-  color: white;
+  background-color: #3b7ddd;
+  color: #ced4da;
   border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  padding: 1em;
+  border-radius: 6px;
+  padding: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.8em;
-  font-size: 1em;
-  transition: background 0.3s ease;
-}
-.sign-out-button:hover {
-  background-color: #ff3333;
-}
-/* ===== Összecsukott Állapothoz ===== */
-.sidebar.collapsed .menu-item span,
-.sidebar.collapsed .sign-out-button span,
-.sidebar.collapsed .logo-text {
-  display: none;
-}
-.sidebar.collapsed .menu-item {
-  justify-content: center;
-}
-.sidebar.collapsed .menu-item i {
-  margin-right: 0;
-}
-/* ===== Fade Animáció a Szövegeknek ===== */
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s ease-in-out;
-}
-.fade-enter, .fade-leave-to {
-  opacity: 0;
-}
-
-.mobile-menu {
-  display: none;
-  position: fixed;
-  top: .5em;
-  right: .5em;
-  z-index: 1000;
-  background: #fac108;
-  border-radius: 12px;
-}
-
-.menu-button {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 1em;
   cursor: pointer;
+  width: 100%;
+  transition: background 0.3s;
 }
 
-@media screen and (max-width: 768px) {
-  .sidebar {
-    width: 60vw;
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100vh;
-    z-index: 999;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
-  }
-  .mobile-visible {
-    transform: translateX(0);
-  }
-  .mobile-menu {
-    display: block;
-  }
+.sign-out-button{
+  transition: .3s ease-in-out;
+}
+
+.sign-out-button:hover {
+  background-color: #326abc;
+}
+
+.sign-out-icon.disable {
+  display: flex;
+  visibility: visible;
+  pointer-events: none; /* Letiltja a kattintást */
+  background-color: #3b7ddd; /* Megőrzi az eredeti színt, csak átlátszóbb */
+}
+
+.sign-out-icon {
+  visibility: hidden;
+  display: none;
+  transition: .2s ease-in-out
 }
 </style>

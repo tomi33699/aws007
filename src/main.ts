@@ -1,25 +1,29 @@
-import "./assets/main.css";
 import { createApp } from "vue";
+import { createPinia } from 'pinia';
 import App from "./App.vue";
 import { Amplify } from "aws-amplify";
 import outputs from "../amplify_outputs.json";
 import router from "./router";
-import "@fortawesome/fontawesome-free/css/all.css";
-import VueApexCharts from "vue3-apexcharts";
-import { initWebSocket } from "./services/webSocketService";
+import VueApexCharts from "vue3-apexcharts"; // ensure correct import
+import wsService from "./services/webSocketService"; 
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 
-// AWS Amplify konfigurálása
+
+import "./assets/main.css"; 
+
+
 Amplify.configure(outputs);
 
-// WebSocket inicializálása
-initWebSocket("wss://eforceapi.hu/ws");
-
-// Vue app létrehozása
 const app = createApp(App);
 
-// Plugin-ek használata
-app.use(router);
-app.use(VueApexCharts);
+// Regisztráljuk a VueApexCharts komponenst globálisan
+app.component('vue-apexcharts', VueApexCharts);
 
-// App mountolása
+app.use(createPinia());
+app.use(router);
+
+console.log("🔗 WebSocket kapcsolat létrejött:", wsService);
+
 app.mount("#app");

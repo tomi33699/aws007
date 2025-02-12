@@ -1,81 +1,57 @@
-const API_BASE = "https://eforceapi.hu";
-const cache = new Map<string, { data: any; expiry: number }>();
+import axios from 'axios';
 
-async function fetchFromApi(endpoint: string, params: Record<string, string> = {}, cacheDuration = 60000): Promise<any> {
-  const query = Object.keys(params).length ? "?" + new URLSearchParams(params).toString() : "";
-  const cacheKey = `${endpoint}-${JSON.stringify(params)}`;
+const API_BASE_URL = 'https://eforceapi.hu';
 
-  if (cache.has(cacheKey)) {
-    const cached = cache.get(cacheKey);
-    if (cached && Date.now() < cached.expiry) {
-      return cached.data;
+const apiClient = axios.create({
+    baseURL: API_BASE_URL,
+    timeout: 10000,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
+
+// 🔹 Böngésző-kompatibilis cache (helyettesíti a node-cache-t)
+const cacheTTL = 300 * 1000; // 5 perc (ms)
+const cacheStorage = new Map<string, { data: any, timestamp: number }>();
+
+const fetchData = async (endpoint: string, params = {}) => {
+    const cacheKey = `${endpoint}_${JSON.stringify(params)}`;
+    const cachedData = cacheStorage.get(cacheKey);
+
+    // 🔹 Ha van érvényes cache adat, használjuk
+    if (cachedData && (Date.now() - cachedData.timestamp < cacheTTL)) {
+        console.log(`📦 Cache-ből származó adat: ${endpoint}`, params);
+        return cachedData.data;
+    } else {
+        console.log(`🌐 Friss API hívás: ${endpoint}`, params);
     }
-  }
-  const response = await fetch(`${API_BASE}${endpoint}${query}`);
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`);
-  }
 
-  const data = await response.json();
-  if (!data || typeof data !== 'object') {
-    console.error(`[fetchFromApi] API response is invalid:`, data);
-    return [];
-  }
-
-  if ('data' in data && Array.isArray(data.data)) {
-    cache.set(cacheKey, { data: data.data, expiry: Date.now() + cacheDuration });
-    return data.data;
-  }
-
-  if (Array.isArray(data)) {
-    cache.set(cacheKey, { data, expiry: Date.now() + cacheDuration });
-    return data;
-  }
-
-  console.error(`[fetchFromApi] Unexpected API response format:`, data);
-  return [];
-}
-
-export async function fetchBukkData(date: string): Promise<any[]> {
-  if (!date) throw new Error("[fetchBukkData] Missing date parameter.");
-  return await fetchFromApi("/bukk_1min_unregulated", { date });
-}
-
-export async function fetchBukkRawData(date: string): Promise<any[]> {
-  if (!date) throw new Error("[fetchBukkRawData] Missing date parameter.");
-  return await fetchFromApi("/bukk_raw_data", { date });
-}
-
-export async function fetchHalmajData(date: string): Promise<any[]> {
-  if (!date) throw new Error("A dátum kötelező a Halmaj adatok lekéréséhez.");
-  return await fetchFromApi("/halmaj_1min_unregulated", { date });
-}
-
-export async function getPvActualData(): Promise<any> {
-  return await fetchFromApi("/pv_actual_data");
-}
-
-export async function getHupxData(date?: string): Promise<any> {
-  return await fetchFromApi("/hupx_data", date ? { date } : {});
-}
-
-export async function fetchBukkDailyData(): Promise<any[]> {
-  return await fetchFromApi("/bukk_daily_data");
-}
-
-export async function fetchHalmajDailyData(): Promise<any[]> {
-  return await fetchFromApi("/halmaj_daily_data");
-}
-
-const apiService = {
-  fetchFromApi,
-  fetchBukkData,
-  fetchBukkRawData,
-  fetchHalmajData,
-  getPvActualData,
-  getHupxData,
-  fetchBukkDailyData,
-  fetchHalmajDailyData,
+    try {
+        const response = await apiClient.get(endpoint, { params });
+        cacheStorage.set(cacheKey, { data: response.data, timestamp: Date.now() });
+        return response.data;
+    } catch (error: any) {
+        if (error.response) {
+            console.error(`API Error [${error.response.status}] at ${endpoint}:`, error.response.data.detail || error.response.data);
+        } else if (error.request) {
+            console.error(`API Error: No response received from ${endpoint}`, error.request);
+        } else {
+            console.error(`Unexpected API Error: ${error.message}`);
+        }
+        throw error;
+    }
 };
 
-export default apiService;
+// API végpontok lekérése
+export const getPVRealTimeData = async () => fetchData('/pv_real_time_data');
+export const getPVProductionSummary = async (value: string) => fetchData('/pv_production_summary');
+export const getForecastData = async (date: string) => fetchData('/forecast_data', { date });
+export const getBukkData = async (date: string) => fetchData('/bukk_1min_noregulation', { date });
+export const getHalmajData = async (date: string) => fetchData('/halmaj_1min_noregulation', { date });
+export const getBalancingPrice = async (date: string) => fetchData('/balancing_activated_price', { date });
+export const getBalancingVolume = async (date: string) => fetchData('/balancing_activated_volume', { date });
+export const getHupxData = async (date: string) => fetchData('/hupx_data', { date });
+export const getBukkDailyData = async (date: string) => fetchData('/bukk_daily_data', { date });
+export const getHalmajDailyData = async (date: string) => fetchData('/halmaj_daily_data', { date });
+
+export default apiClient;

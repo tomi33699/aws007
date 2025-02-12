@@ -1,71 +1,75 @@
-import { reactive } from "vue";
+import { useDataStore } from '@/store/dataStore';
 
-let socket: WebSocket | null = null;
-let isConnected = false;
+class WebSocketService {
+  private socket: WebSocket | null = null;
+  private eventListeners: { [event: string]: ((data: any) => void)[] } = {};
 
-export const socketData = reactive({
-  bukkData: [] as { timestamp: number; powerp: number; irrad: number }[],
-});
+  constructor(private wsUrl: string) {}
 
-export function initWebSocket(url: string): void {
-  if (isConnected) {
-    console.warn("⚠️ WebSocket már inicializálva, kihagyás...");
-    return;
+  connect() {
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      return;
+    }
+
+    this.socket = new WebSocket(this.wsUrl);
+
+    this.socket.onopen = () => {
+      console.log("✅ WebSocket kapcsolat létrejött.");
+    };
+
+    this.socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log("🔔 WebSocket üzenet érkezett:", data); // DEBUG
+
+      // 🔹 Ellenőrizzük, hogy a megfelelő táblák érkeztek-e
+      if (data.event === "new_data" && data.data) {
+        this.handleNewData(data.data);
+      }
+
+      // 🔹 Ha az eseményhez van regisztrált callback, hívjuk meg
+      if (data.event && this.eventListeners[data.event]) {
+        this.eventListeners[data.event].forEach((callback) => callback(data.data));
+      }
+    };
+
+    this.socket.onclose = () => {
+      console.warn("⚠️ WebSocket kapcsolat megszakadt. Újracsatlakozás...");
+      setTimeout(() => this.connect(), 5000);
+    };
+
+    this.socket.onerror = (error) => {
+      console.error("❌ WebSocket hiba:", error);
+    };
   }
 
-  socket = new WebSocket(url);
+  // 🔹 Új API lekérés WebSocket esemény érkezésekor
+  private handleNewData(newData: any) {
+    const dataStore = useDataStore();
 
-  socket.onopen = () => {
-    isConnected = true;
-  };
+    if (!newData || !newData.table) return;
 
-  socket.onmessage = (event) => {
-    try {
-      if (!event.data) {
-        console.warn("⚠️ Üres WebSocket üzenet érkezett!");
-        return;
-      }
-
-      const message = JSON.parse(event.data);
-      console.log("📡 WebSocket üzenet:", message);
-
-      if (message.event === "data_change" && message.details === "uj_bukk_raw_adat") {
-        console.log("✅ Új Bükk adat:", message);
-
-        if (
-          message.timestamp &&
-          typeof message.timestamp === "string" &&
-          message.powerp !== undefined &&
-          message.irrad !== undefined
-        ) {
-          socketData.bukkData.push({
-            timestamp: new Date(message.timestamp).getTime(),
-            powerp: parseFloat(message.powerp.toFixed(2)),
-            irrad: parseFloat(message.irrad.toFixed(2)),
-          });
-        } else {
-          console.warn("⚠️ Hibás formátumú WebSocket adat:", message);
-        }
-      }
-    } catch (err) {
-      console.error("❌ WebSocket parsing error:", err);
+    // 🔹 Ha a bukk_raw_data vagy halmaj_raw_data érkezik, frissítjük a PV Real-Time adatokat
+    if (newData.table === 'bukk_raw_data' || newData.table === 'halmaj_raw_data') {
+      console.log(`📡 API frissítés WebSocket esemény miatt: ${newData.table}`);
+      dataStore.fetchRealTimeData();
+    } else {
+      console.log("🔍 WebSocket adat nem releváns:", newData.table);
     }
-  };
+  }
 
-  socket.onerror = (error) => {
-    console.error("❌ WebSocket hiba:", error);
-    isConnected = false;
-    reconnectWebSocket(url);
-  };
+  on(event: string, callback: (data: any) => void) {
+    if (!this.eventListeners[event]) {
+      this.eventListeners[event] = [];
+    }
+    this.eventListeners[event].push(callback);
+  }
 
-  socket.onclose = () => {
-    console.warn("⚠️ WebSocket kapcsolat megszakadt");
-    isConnected = false;
-    reconnectWebSocket(url);
-  };
+  close() {
+    this.socket?.close();
+  }
 }
 
-function reconnectWebSocket(url: string) {
-  console.log("♻️ Újracsatlakozás 5 mp múlva...");
-  setTimeout(() => initWebSocket(url), 5000);
-}
+const wsService = new WebSocketService("wss://eforceapi.hu/ws");
+wsService.connect();
+
+export default wsService;
