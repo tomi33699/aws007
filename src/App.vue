@@ -70,7 +70,7 @@ onMounted(() => {
 /* Sidebar és tartalom elrendezése */
 .main-content {
   flex-grow: 1;
-  padding: 1em;
+  position: relative;
   overflow-y: auto;
 }
 

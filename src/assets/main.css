@@ -9,75 +9,134 @@
 
 /* 🌟 Alap háttér és elrendezés */
 body {
-  background: #f4f6f9;
+  background: #f9fafb;
 }
 
-/* Dashboard konténer */
-.dashboard-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 20px;
+.banner-container{
+  min-height: 5em;
+  background: black;
 }
-
-/* 🟢 Kártyák */
 .card-container {
   display: flex;
-  gap: 15px;
-  justify-content: center;
   flex-wrap: wrap;
+  width: 100%;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin: 1em 0;
+  padding: 1em;
+  border-radius: 12px 12px 0 0;
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: .5em;
+  width: 100%;
 }
 
 .card {
   background: #ffffff;
-  color: #1e293b;
   border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  padding: 2em 0;
+  flex-basis: 24%;
   text-align: center;
-  width: 220px;
-  font-size: 16px;
-  font-weight: 500;
-  transition: all 0.3s ease-in-out;
+  justify-content: space-between;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.flexx{
+  flex-direction: row!important;
+  gap: .5em;
+}
+.icon {
+  font-size: 1em;
+  color: #CED4DA;
+  background: #222E3C;
+  padding: 1em;
+  border-radius: 8px;
+  margin-bottom: 1em;
 }
 
-/* 🌟 Kártya ikonok */
-.card .icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
+.card-content {
+  font-size: 16px;
+  color:#777;
+}
+
+.card-content-row{
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  margin: auto;
+  justify-content: space-around;
+}
+
+
+.data-item {
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  margin-bottom: 10px;
-  font-size: 24px;
-  color: white;
+  align-items: center;
+  margin: 0.5rem 0;
+  width: 48%;
 }
 
-.card .icon.blue { background: #4A90E2; }
-.card .icon.yellow { background: #F5A623; }
-.card .icon.green { background: #2ECC71; }
-.card .icon.red { background: #E74C3C; }
-.card .icon.orange { background: #FF9800; }
+.loading-text {
+  font-size: 14px;
+  color: #777;
+}
 
-/* 🌟 Kiemelt kártya */
-.total-card {
-  background: #4A90E2;
-  color: white;
-  border: none;
+.total-power,
+.total-energy {
+  font-size: 18px;
   font-weight: bold;
+  color: #3b82f6;
+  margin-top: 1rem;
 }
 
-/* 📊 Chart konténer */
-.chart-container {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
+.dashboardpage-totalcontainer{
+  display: grid;
+  grid-template-columns: 75% 25%;
+  padding: 0 1em;
+  
 }
 
+.datepickercont-dashboardpage{
+  padding: 0 1em;
+}
+#datePicker{
+  padding: .2em .5em;
+}
+.dashboardpage-halmajbukkchartcont{
+  display: grid;
+  grid-template-columns: 50% 50%; 
+  padding: 0 1em  1em 1em;
+}
+
+@media (max-width: 768px) {
+  .cards{
+    display: block;
+  }
+  .dashboardpage-totalcontainer{
+    display: block;
+    padding: 0;
+  }
+  .dashboardpage-halmajbukkchartcont{
+    display: block;
+    padding: 0;
+  }
+  .datepickercont-dashboardpage{
+    text-align: center;
+  }
+ 
+}

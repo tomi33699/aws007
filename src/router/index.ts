@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import type { RouteRecordRaw } from "vue-router"; // ✅ Javított type-only import
 import DashboardPage from "@/pages/DashboardPage.vue";
-import HalmajPage from "@/pages/HalmajPage.vue";
+import Market from "@/pages/MarketPage.vue";
 import Weather from "@/pages/Weather.vue";
 import NotFound from "@/pages/NotFound.vue";
 import { fetchAuthSession, signOut } from "aws-amplify/auth"; // ✅ Helyes import AWS Amplify 6.x verzióhoz
@@ -12,17 +12,18 @@ const routes: Array<RouteRecordRaw> = [
     name: "Dashboard",
     component: DashboardPage,
     meta: { requiresAuth: true },
+    props: true,
+  },
+  {
+    path: "/market",
+    name: "Market",
+    component: Market,
+    meta: { requiresAuth: true },
   },
   {
     path: "/weather",
     name: "Időjárás",
     component: Weather,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/halmaj",
-    name: "Halmaj",
-    component: HalmajPage,
     meta: { requiresAuth: true },
   },
   {

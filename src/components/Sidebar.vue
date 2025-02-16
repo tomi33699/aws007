@@ -6,17 +6,17 @@ import { signOut } from "aws-amplify/auth";
 const route = useRoute();
 
 const menus = ref([
-  { label: "Dashboard", path: "/", icon: "fa-sliders-h" },
-  { label: "Weather", path: "/weather", icon: "fa-cloud-sun" },
-  { label: "Blank", path: "/blank", icon: "fa-file" },
+  { label: "Főoldal", path: "/", icon: "fa-sliders-h" },
+  { label: "Piaci adatok", path: "/market", icon: "fa-chart-bar" },
+  { label: "Időjárás", path: "/weather", icon: "fa-cloud-sun" },
 ]);
 
 const tools = ref([
-  { label: "Buttons", path: "/buttons", icon: "fa-square" },
+  { label: "Menetrend", path: "/buttons", icon: "fa-calendar" },
 ]);
 
 const plugins = ref([
-  { label: "Profile", path: "/profile", icon: "fa-chart-bar" },
+  { label: "Profil", path: "/profile", icon: "fa-user" },
 ]);
 
 const isSidebarCollapsed = ref(false);
@@ -28,6 +28,16 @@ function toggleSidebar() {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
   emit("sidebarToggle", isSidebarCollapsed.value);
 }
+
+const isMobileMenuOpen = ref(false);
+
+function toggleMobileMenu() {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value;
+  if (isSidebarCollapsed.value) {
+    isSidebarCollapsed.value = false;
+  }
+}
+
 
 async function handleSignOut() {
   if (isSidebarCollapsed.value) return; // Ha össze van csukva, ne fusson le a kijelentkezés
@@ -41,7 +51,10 @@ async function handleSignOut() {
 
 
 <template>
-  <div class="sidebar" :class="{ collapsed: isSidebarCollapsed }">
+  <div class="hamburger-menu" @click="toggleMobileMenu">
+    <i class="fa fa-bars"></i>
+  </div>
+  <div class="sidebar" :class="{ collapsed: isSidebarCollapsed, 'mobile-open': isMobileMenuOpen }">
     <div class="sidebar-header" :class="{ sidebarhelp: isSidebarCollapsed }" @click="toggleSidebar">
       <i class="fa fa-bolt logo-icon"></i>
       <span v-if="!isSidebarCollapsed" class="logo-text">EforceApp</span>
@@ -92,12 +105,12 @@ async function handleSignOut() {
 .sidebar {
   background-color: #222e3c;
   color: white;
-  width: 250px;
+  min-width: 250px;
   height: 100vh;
   display: flex;
   flex-direction: column;
   padding: 15px 0;
-  transition: width 0.3s;
+  transition: width 0.3s ease-in-out;
 }
 
 .sidebar.collapsed {
@@ -227,5 +240,40 @@ async function handleSignOut() {
   visibility: hidden;
   display: none;
   transition: .2s ease-in-out
+}
+
+.hamburger-menu {
+  display: none;
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 10000;
+}
+
+
+@media (max-width: 768px) {
+  .hamburger-menu {
+    display: block;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar.collapsed {
+    display: none;
+  }
 }
 </style>
