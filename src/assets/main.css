@@ -62,7 +62,7 @@ body {
 }
 .icon {
   font-size: 1em;
-  color: #CED4DA;
+  color: #e9ecef;
   background: #222E3C;
   padding: 1em;
   border-radius: 8px;
@@ -100,7 +100,7 @@ body {
 .total-energy {
   font-size: 18px;
   font-weight: bold;
-  color: #3b82f6;
+  color: #326ABC;
   margin-top: 1rem;
 }
 
@@ -117,12 +117,17 @@ body {
 #datePicker{
   padding: .2em .5em;
 }
+#monthPicker{
+  padding: .2em .5em;
+}
 .dashboardpage-halmajbukkchartcont{
   display: grid;
   grid-template-columns: 50% 50%; 
   padding: 0 1em  1em 1em;
 }
-
+.dailysum-data-cont{
+  padding: 1em;
+}
 @media (max-width: 768px) {
   .cards{
     display: block;
@@ -137,6 +142,9 @@ body {
   }
   .datepickercont-dashboardpage{
     text-align: center;
+  }
+  .dailysum-data-cont{
+    padding: 0;
   }
  
 }

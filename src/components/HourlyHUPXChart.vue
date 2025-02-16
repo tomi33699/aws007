@@ -78,9 +78,11 @@ const series = computed(() => [
 </script>
 
 <template>
-  <div>
+  <div >
     <label for="datePicker">Válassz dátumot:</label>
     <input id="datePicker" type="date" v-model="selectedDate" @change="fetchData" />
     <VueApexCharts type="line" :options="chartOptions" :series="series" height="400" />
   </div>
 </template>
+
+

@@ -62,12 +62,12 @@ const series = computed(() => [
 </script>
 
 <template>
-  <div>
+  <div class="dailysum-data-cont">
     <h2 class="text-center">📊 Napi termelési adatok</h2>
     <div class="datepickercont-dashboardpage">
       <input id="monthPicker" type="month" v-model="selectedMonth">
     </div>
-    
     <VueApexCharts type="bar" :options="chartOptions" :series="series" height="400" />
   </div>
 </template>
+

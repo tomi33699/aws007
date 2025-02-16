@@ -112,7 +112,7 @@
   }
   .search-button {
     padding: 6px 20px;
-    background-color: #007bff;
+    background-color: #326ABC;
     color: #fff;
     border: none;
     border-radius: 8px;
@@ -146,7 +146,7 @@
   }
   .temp {
     font-weight: bold;
-    color: #007bff;
+    font-size: 2em;
   }
   .forecast h3 {
     margin-top: 20px;
@@ -173,10 +173,14 @@
   }
   .forecast-time {
     font-weight: 500;
+    color: #555;
   }
   .forecast-clouds {
-    color: #555;
     margin-top: 5px;
+  }
+  .forecast-clouds i{
+    color:#326ABC;
+
   }
 
   </style>
