@@ -42,6 +42,7 @@ const series = computed(() => [
   { name: "Összesített Besugárzás (W/m²)", data: props.total1MinData.map(item => parseFloat((item.irrad ?? 0).toFixed(2))) },
   { name: "Besug forecast (W/m²)", data: props.interpolatedForecast.map(val => parseFloat(val.toFixed(2))) }
 ]);
+
 </script>
 
 <style scoped>

@@ -5,6 +5,10 @@
     <PvDataCard />
     <div class="datepickercont-dashboardpage">
       <input id="datePicker" type="date" v-model="date">
+      <button @click="fetchData" class="refresh-button">Frissítés</button>
+  <i class="fa fa-info-circle info-icon">
+    <div class="info-popup">Chart adatok frissítése</div>
+  </i>
     </div>
     
     <div class="dashboardpage-totalcontainer">
@@ -100,6 +104,45 @@ watch(date, fetchData);
 </script>
 
 <style>
+
+
+.refresh-button {
+  margin: 10px;
+  padding: 8px 16px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.refresh-button:hover {
+  background-color: #2563eb;
+}
+.info-icon {
+  margin-left: 8px;
+  font-size: 18px;
+  color: #3b82f6;
+  cursor: pointer;
+  position: relative;
+}
+.info-popup {
+  display: none;
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #ebebeb;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: .6em;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.info-icon:hover .info-popup {
+  display: block;
+}
   
 @media (max-width: 768px) {
   .dashboardpage-totalcontainer{
