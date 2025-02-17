@@ -11,24 +11,21 @@ import type {
 
 const API_BASE_URL = "https://eforceapi.hu";
 
+const cache = new Map();
+
+async function memoizedApiCall(url: string, params: any) {
+  const cacheKey = `${url}_${JSON.stringify(params)}`;
+  if (cache.has(cacheKey)) {
+    return cache.get(cacheKey);
+  }
+  const response = await axios.get(url, { params });
+  cache.set(cacheKey, response.data);
+  return response.data;
+}
+
+
 export const apiService = {
-  async getDashboardData(date: string) {
-    try {
-      const [halmajData, bukkData, forecastData] = await Promise.all([
-        axios.get(`${API_BASE_URL}/halmaj_1min_noregulation`, { params: { date } }),
-        axios.get(`${API_BASE_URL}/bukk_1min_noregulation`, { params: { date } }),
-        axios.get(`${API_BASE_URL}/forecast_data`, { params: { date } })
-      ]);
-      return {
-        halmajData: halmajData.data,
-        bukkData: bukkData.data,
-        forecastData: forecastData.data
-      };
-    } catch (error) {
-      console.error("Error fetching dashboard data:", error);
-      throw error;
-    }
-  },
+  
 
   async getPaginatedData(api: string, date: string, limit = 100, offset = 0) {
     const response = await axios.get(`${API_BASE_URL}/${api}`, { params: { date, limit, offset } });
@@ -43,30 +40,14 @@ export const apiService = {
     sessionStorage.setItem(cacheKey, JSON.stringify(response.data));
     return response.data;
   },
-
-    async getForecastData(
-        date: string,
-      ): Promise<{ data: ForecastData[]; lastData?: ForecastData }> {
-        const response = await axios.get(`${API_BASE_URL}/forecast_data`, {
-          params: { date },
-        });
-      
-      
-        // 1 órás előretolás minden timestamp-re
-        const shiftedData = response.data.map((item: ForecastData) => ({
-          ...item,
-          timestamp: new Date(new Date(item.timestamp).getTime() + 1 * 60 * 60 * 1000).toISOString(), // 1 órás előretolás
-        }));
-      
-        return {
-          data: shiftedData,
-          lastData: shiftedData.length > 0
-            ? shiftedData[shiftedData.length - 1]
-            : undefined,
-        };
-      }
-      ,
-
+  async getForecastData(date: string): Promise<{ data: ForecastData[]; lastData?: ForecastData }> {
+    const response = await memoizedApiCall(`${API_BASE_URL}/forecast_data`, { date });
+    const shiftedData = response.map((item: ForecastData) => ({
+      ...item,
+      timestamp: new Date(new Date(item.timestamp).getTime() + 1 * 60 * 60 * 1000).toISOString(),
+    }));
+    return { data: shiftedData, lastData: shiftedData.length > 0 ? shiftedData[shiftedData.length - 1] : undefined };
+  },
   async getBalancingActivatedPrice(date: string): Promise<{ data: BalancingPriceData[]; lastData?: BalancingPriceData }> {
     const response = await axios.get(`${API_BASE_URL}/balancing_activated_price`, { params: { date } });
   
@@ -136,30 +117,24 @@ export const apiService = {
     return { data: transformedData, avg };
   },
   async getBukk1MinData(date: string): Promise<{ data: PowerData[] }> {
-    const response = await axios.get(`${API_BASE_URL}/bukk_1min_noregulation`, { params: { date, limit: 100, offset: 0 } });
-    const transformedData = response.data.map(({ time, powerp_kw, irrad }: any) => ({
+    const response = await memoizedApiCall(`${API_BASE_URL}/bukk_1min_noregulation`, { date, limit: 100, offset: 0 });
+    const transformedData = response.map(({ time, powerp_kw, irrad }: any) => ({
       timestamp: new Date(new Date(time).getTime() - 1 * 60 * 60 * 1000).toISOString(),
       power_kw: powerp_kw ?? 0,
       irrad: irrad ?? 0,
     }));
-    
-  
     return { data: transformedData };
   },
-  
-  async getHalmaj1MinData(date: string): Promise<{ data: PowerData[] }> {
-    const response = await axios.get(`${API_BASE_URL}/halmaj_1min_noregulation`, { params: { date, limit: 100, offset: 0 } });
 
-  
-    const transformedData = response.data.map((item: any) => ({
-      timestamp: new Date(new Date(item.time).getTime() - 1 * 60 * 60 * 1000).toISOString(), // 1 órás előretolás
+  async getHalmaj1MinData(date: string): Promise<{ data: PowerData[] }> {
+    const response = await memoizedApiCall(`${API_BASE_URL}/halmaj_1min_noregulation`, { date, limit: 100, offset: 0 });
+    const transformedData = response.map((item: any) => ({
+      timestamp: new Date(new Date(item.time).getTime() - 1 * 60 * 60 * 1000).toISOString(),
       power_kw: item.powerp_kw ?? 0,
       irrad: item.irrad ?? 0,
     }));
-  
     return { data: transformedData };
   },
-  
   
   async getBukkDailyData(year: string, month: string): Promise<{ data: PowerData[] }> {
     const response = await axios.get(`${API_BASE_URL}/bukk_daily_data`, {

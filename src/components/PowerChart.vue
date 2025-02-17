@@ -7,6 +7,7 @@
   <script setup lang="ts">
   import { defineProps, computed, ref } from 'vue';
   import VueApexCharts from 'vue3-apexcharts';
+  
 
   const props = defineProps<{ 
     total1MinData: { timestamp: string; power_kw: number; irrad?: number }[]; 

@@ -1,26 +1,24 @@
 <template>
-  <div id="windy-container">
-    <div id="windy"></div>
+  <div class="windy-container">
+    <div id="windy-container">
+      <div id="windy"></div>
+    </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { onMounted } from "vue";
 
 export default {
   setup() {
     const WINDY_API_KEY = "mjJC4nO9vbsm0fyzsNOoNyC3RjIT1V75";
-    const loading = ref(true);
 
     onMounted(async () => {
       try {
         await loadWindyAPI();
-        await waitForWindyInit();
         initializeWindyMap();
       } catch (error) {
         console.error("🚨 Windy API betöltési hiba:", error);
-      } finally {
-        loading.value = false;
       }
     });
 
@@ -39,46 +37,40 @@ export default {
       });
     }
 
-    function waitForWindyInit(attempts = 15) {
-      return new Promise((resolve, reject) => {
-        const check = () => {
-          if (window.windyInit) resolve();
-          else if (attempts > 0) setTimeout(() => check(--attempts), 500);
-          else reject("Windy API nem töltődött be megfelelően.");
-        };
-        check();
-      });
-    }
-
     function initializeWindyMap() {
       window.windyInit({
         key: WINDY_API_KEY,
         lat: 47.7833,
         lon: 20.0133,
         zoom: 7,
-        container: "clouds",
-        willReadFrequently: true,
+        container: "windy",
         overlay: "clouds",
+        willReadFrequently: true,
         onReady: windyAPI => {
           const { map } = windyAPI;
-                
           map.invalidateSize();
+          map.setView([47.7833, 20.0133], 7);
         }
       });
     }
 
-    return { loading };
+    return {};
   }
 };
 </script>
 
 <style>
-#windy-container {
+.windy-container {
   width: 100%;
   height: 600px;
   position: relative;
 }
-#windy-container::before{
+#windy-container{
+  width: 100%;
+  height: 600px;
+  position: relative;
+}
+.windy-container::before{
   content: '';
   position: absolute;
   width: 100%;
@@ -90,5 +82,4 @@ export default {
   width: 100%;
   height: 100%;
 }
-
 </style>

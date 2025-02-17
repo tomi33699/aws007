@@ -1,3 +1,4 @@
+// Javított dataWorker.ts
 export interface DataItem {
   timestamp: string;
   power_kw: number;
@@ -5,9 +6,9 @@ export interface DataItem {
 }
 
 export interface WorkerInput {
-  halmajData: DataItem[];
-  bukkData: DataItem[];
-  forecastData: { timestamp: string; today_1200_bukkabrany: number }[];
+  halmajData?: DataItem[];
+  bukkData?: DataItem[];
+  forecastData?: { timestamp: string; today_1200_bukkabrany: number }[];
 }
 
 export interface WorkerOutput {
@@ -16,7 +17,13 @@ export interface WorkerOutput {
 }
 
 self.onmessage = (e: MessageEvent<WorkerInput>) => {
-  const { halmajData, bukkData, forecastData } = e.data;
+  const { halmajData = [], bukkData = [], forecastData = [] } = e.data;
+
+  if (!halmajData || !bukkData) {
+    console.error('Hibás bemeneti adatok a Web Worker-ben');
+    self.postMessage({ totalData: [], interpolatedForecast: [] });
+    return;
+  }
 
   const totalData: DataItem[] = halmajData.map((item, index) => ({
     timestamp: item.timestamp,
@@ -24,11 +31,11 @@ self.onmessage = (e: MessageEvent<WorkerInput>) => {
     irrad: (item.irrad ?? 0) + (bukkData[index]?.irrad ?? 0),
   }));
 
-  const timestamps = totalData.map(item => new Date(item.timestamp).getTime());
+  const timestamps = totalData.map(item => new Date(item.timestamp).getTime()).filter(Boolean);
   const originalForecast = forecastData.map(item => ({
     timestamp: new Date(item.timestamp).getTime(),
     value: item.today_1200_bukkabrany
-  }));
+  })).filter(item => !isNaN(item.timestamp));
 
   const interpolatedForecast = timestamps.map(time => {
     const before = originalForecast.filter(item => item.timestamp <= time).pop();
@@ -41,6 +48,6 @@ self.onmessage = (e: MessageEvent<WorkerInput>) => {
     return before.value + weight * (after.value - before.value);
   });
 
-  const output = { totalData, interpolatedForecast } as WorkerOutput;
+  const output: WorkerOutput = { totalData, interpolatedForecast };
   self.postMessage(output);
 };

@@ -1,22 +1,25 @@
 <template>
   <div>
-    <WindyMap />
-    <WindyWeather />
-    <PvDataCard />
-    <div>
-      <div class="datepickercont-dashboardpage">
-        <input id="datePicker" type="date" v-model="date" />
-        <button @click="fetchData" class="refresh-button">Frissítés</button>
+    <Loader v-if="loading" />
+    <div v-else>
+      <WindyMap />
+      <WindyWeather />
+      <PvDataCard />
+      <div>
+        <div class="datepickercont-dashboardpage">
+          <input id="datePicker" type="date" v-model="date" />
+          <button @click="fetchData" class="refresh-button">Frissítés</button>
+        </div>
+        <div class="dashboardpage-totalcontainer">
+          <PowerChart :total1MinData="total1MinData.length ? total1MinData : defaultData" :interpolatedForecast="interpolatedForecast.length ? interpolatedForecast : defaultForecast" />
+          <VueProfil />
+        </div>
+        <div class="dashboardpage-halmajbukkchartcont">
+          <BukkChart :bukk1MinData="bukk1MinData.length ? bukk1MinData : defaultData" />
+          <HalmajChart :halmaj1MinData="halmaj1MinData.length ? halmaj1MinData : defaultData" />
+        </div>
+        <DailyProductionChart />
       </div>
-      <div class="dashboardpage-totalcontainer">
-        <PowerChart :total1MinData="total1MinData.length ? total1MinData : defaultData" :interpolatedForecast="interpolatedForecast.length ? interpolatedForecast : defaultForecast" />
-        <VueProfil />
-      </div>
-      <div class="dashboardpage-halmajbukkchartcont">
-        <BukkChart :bukk1MinData="bukk1MinData.length ? bukk1MinData : defaultData" />
-        <HalmajChart :halmaj1MinData="halmaj1MinData.length ? halmaj1MinData : defaultData" />
-      </div>
-      <DailyProductionChart />
     </div>
   </div>
 </template>
@@ -33,6 +36,7 @@ import PowerChart from '@/components/PowerChart.vue';
 import BukkChart from '@/components/BukkChart.vue';
 import HalmajChart from '@/components/HalmajChart.vue';
 import DailyProductionChart from '@/components/DailyProductionChart.vue';
+import Loader from '@/components/Loader.vue';
 
 const date = ref(new Date().toISOString().split('T')[0]);
 const total1MinData = ref<PowerData[]>([]);
@@ -40,10 +44,12 @@ const bukk1MinData = ref<PowerData[]>([]);
 const halmaj1MinData = ref<PowerData[]>([]);
 const forecastData = ref<ForecastData[]>([]);
 const interpolatedForecast = ref<number[]>([]);
+const loading = ref(true);
 const defaultData = Array(1000).fill({ timestamp: new Date().toISOString(), power_kw: 0, irrad: 0 });
 const defaultForecast = Array(1000).fill(0);
 
 const fetchData = async () => {
+  loading.value = true;
   try {
     const [halmaj, bukk, forecast] = await Promise.all([
       apiService.getHalmaj1MinData(date.value),
@@ -62,10 +68,12 @@ const fetchData = async () => {
       worker.onmessage = (e) => {
         total1MinData.value = e.data.totalData;
         interpolatedForecast.value = e.data.interpolatedForecast;
+        loading.value = false;
       };
     });
   } catch (error) {
     console.error('Hiba történt az adatok lekérésekor:', error);
+    loading.value = false;
   }
 };
 

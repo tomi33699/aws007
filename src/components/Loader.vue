@@ -1,6 +1,6 @@
 <template>
     <div class="loader-container">
-      <div class="spinner"></div>
+      <div class="loader"></div>
       <p>Adatok betöltése...</p>
     </div>
   </template>
@@ -14,26 +14,39 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100px;
+    height: 100vh;
     width: 100%;
     text-align: center;
+  }.loader{
+      width: 315px;
+      height: 200px;
+      background:
+          linear-gradient(0.25turn, transparent, #FFF, transparent),
+          linear-gradient(#DDD, #DDD),
+          radial-gradient(38px circle at 19px 19px, #DDD 50%, transparent 51%),
+          linear-gradient(#DDD, #DDD);
+      background-color: #fff;
+      background-repeat: no-repeat;
+      background-size: 315px 200px, 315px 130px, 100px 100px, 225px 30px;
+      background-position: -315px 0, 0 0, 15px 140px, 65px 145px;
+      animation: loading 1.5s infinite;
+  }
+
+  @keyframes loading {
+    to {
+      background-position: 315px 0, 0 0, 15px 140px, 65px 145px;
+    }
   }
   
-  .spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid rgba(0, 0, 255, 0.3);
-    border-top: 5px solid #008FFB;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 10px;
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
   }
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  100% {
+    transform: rotate(360deg);
   }
-  
+} 
   p {
     font-size: 14px;
     font-weight: bold;
