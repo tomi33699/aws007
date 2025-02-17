@@ -17,28 +17,46 @@
   const defaultForecast = ref(Array(1000).fill(0));
 
   const tickAmount = computed(() => Math.min(10, Math.max(5, Math.floor((props.total1MinData.length || defaultData.value.length) / 30))));
-
   const chartOptions = computed(() => ({
-    chart: {
-      type: 'line',
-      animations: { enabled: false },
-      zoom: { enabled: false },
-      toolbar: { show: false }
-    },
-    stroke: { width: [2, 2, 1], dashArray: [0, 0, 5] },
-    colors: ['#3b82f6', '#facc15', '#22c55e'],
-    xaxis: {
-      type: 'datetime',
-      categories: (props.total1MinData.length ? props.total1MinData : defaultData.value).map(item => item.timestamp),
-      tickAmount: tickAmount.value,
-    },
-    yaxis: [
-      { title: { text: 'Teljesítmény (kW)' } },
-      { opposite: true, title: { text: 'Besugárzás (W/m²)' } },
-    ],
-    tooltip: { shared: true },
-    legend: { show: true }
-  }));
+  chart: {
+    type: 'line',
+    animations: { enabled: false },
+    zoom: { enabled: false },
+    toolbar: { show: false }
+  },
+  stroke: { width: [2, 2, 1], dashArray: [0, 0, 5] },
+  colors: ['#3b82f6', '#facc15', '#22c55e'],
+  xaxis: {
+    type: 'datetime',
+    categories: (props.total1MinData.length ? props.total1MinData : defaultData.value).map(item => item.timestamp),
+    tickAmount: tickAmount.value,
+    labels: {
+      formatter: (value: string | number | Date) => {
+        const date = new Date(value);
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+      }
+    }
+  },
+  yaxis: [
+    { title: { text: 'Teljesítmény (kW)' } },
+    { opposite: true, title: { text: 'Besugárzás (W/m²)' } },
+  ],
+  tooltip: {
+    shared: true,
+    x: {
+      formatter: (value: string | number | Date) => {
+        const date = new Date(value);
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+      }
+    }
+  },
+  legend: { show: true }
+}));
+
 
   const series = computed(() => [
     { name: "Összesített Teljesítmény (kW)", data: (props.total1MinData.length ? props.total1MinData : defaultData.value).map(item => parseFloat(item.power_kw.toFixed(2))) },

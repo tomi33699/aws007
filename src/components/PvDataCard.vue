@@ -1,3 +1,4 @@
+
 <template>
   <div class="card-container">
     <div class="cards">
@@ -8,14 +9,17 @@
           <div class="card-content-row">
             <div class="data-item">
               <i class="fas fa-map-marker-alt"></i> Bükkábrány:
-              <strong>{{ realTimeBukk?.current_power_kw?.toFixed(2) ?? 'N/A' }} kW</strong>
+              <strong>{{ formatNumber((realTimeBukk?.current_power_kw || 0) * -1) }} kW</strong>  
+              <div class="timestamp">{{ formatTime(realTimeHalmaj?.timestamp) }}</div> 
+
             </div>
             <div class="data-item">
               <i class="fas fa-map-marker-alt"></i> Halmajugra:
-              <strong>{{ realTimeHalmaj?.current_power_kw?.toFixed(2) ?? 'N/A' }} kW</strong>
+              <strong>{{ formatNumber(realTimeHalmaj?.current_power_kw || 0) }} kW</strong>
+              <div class="timestamp">{{ formatTime(realTimeHalmaj?.timestamp) }}</div> 
             </div>
             <div class="total-power">
-              <i class="fas fa-sun"></i> <strong>{{ totalRealTime?.toFixed(2) ?? 'N/A' }} kW</strong>
+              <i class="fas fa-sun"></i> <strong>{{ formatNumber(totalRealTime) }} kW</strong>
             </div>
           </div>
         </div>
@@ -27,13 +31,13 @@
         <div class="card-content">
           <div class="card-content-row">
             <div class="data-item">
-              <i class="fas fa-map-marker-alt"></i> Bükkábrány: <strong>{{ productionBukk?.production_kwh?.toFixed(2) ?? 'N/A' }} MWh</strong>
+              <i class="fas fa-map-marker-alt"></i> Bükkábrány: <strong>{{ formatNumber(productionBukk?.production_kwh || 0) }} MWh</strong>
             </div>
             <div class="data-item">
-              <i class="fas fa-map-marker-alt"></i> Halmajugra: <strong>{{ productionHalmaj?.production_kwh?.toFixed(2) ?? 'N/A' }} MWh</strong>
+              <i class="fas fa-map-marker-alt"></i> Halmajugra: <strong>{{ formatNumber(productionHalmaj?.production_kwh || 0) }} MWh</strong>
             </div>
             <div class="total-energy">
-              <i class="fas fa-battery-full"></i> <strong>{{ totalProduction?.toFixed(2) ?? 'N/A' }} MWh</strong>
+              <i class="fas fa-battery-full"></i> <strong>{{ totalProduction }} MWh</strong>
             </div>
           </div>
         </div>
@@ -45,13 +49,13 @@
         <div class="card-content">
           <div class="card-content-row">
             <div class="data-item">
-              <i class="fas fa-map-marker-alt"></i> Bükkábrány: <strong>{{ monthlyProductionBukk?.toFixed(2) ?? 'N/A' }} kWh</strong>
+              <i class="fas fa-map-marker-alt"></i> Bükkábrány: <strong>{{ formatNumber(monthlyProductionBukk) }} kWh</strong>
             </div>
             <div class="data-item">
-              <i class="fas fa-map-marker-alt"></i> Halmajugra: <strong>{{ monthlyProductionHalmaj?.toFixed(2) ?? 'N/A' }} kWh</strong>
+              <i class="fas fa-map-marker-alt"></i> Halmajugra: <strong>{{ formatNumber(monthlyProductionHalmaj) }} kWh</strong>
             </div>
             <div class="total-energy">
-              <i class="fas fa-chart-bar"></i> <strong>{{ totalMonthlyProduction?.toFixed(2) ?? 'N/A' }} kWh</strong>
+              <i class="fas fa-chart-bar"></i> <strong>{{ totalMonthlyProduction }} kWh</strong>
             </div>
           </div>
         </div>
@@ -63,13 +67,13 @@
         <div class="card-content">
           <div class="card-content-row">
             <div class="data-item">
-              <i class="fas fa-arrow-up"></i>  <strong>{{ balancingUp?.toFixed(2) ?? 'N/A' }} HUF/MWh</strong>
+              <i class="fas fa-arrow-up"></i>  <strong>{{ formatNumber(balancingUp) }} HUF/MWh</strong>
             </div>
             <div class="data-item">
-              <i class="fas fa-arrow-down"></i>  <strong>{{ balancingDown?.toFixed(2) ?? 'N/A' }} HUF/MWh</strong>
+              <i class="fas fa-arrow-down"></i>  <strong>{{ formatNumber(balancingDown) }} HUF/MWh</strong>
             </div>
             <div class="data-item">
-              <i class="fas fa-chart-line"></i>  <strong>{{ hupxAvg?.toFixed(2) ?? 'N/A' }} €/MWh</strong>
+              <i class="fas fa-chart-line"></i>  <strong>{{ formatNumber(hupxAvg) }} €/MWh</strong>
             </div>
           </div>
         </div>
@@ -99,20 +103,26 @@ const balancingDownTimestamp = ref<string | null>(null);
 const loading = ref(true);
 
 // Összegzett értékek számítása
-
-
 const totalRealTime = computed(() => {
-  const bukkPower = Math.abs(realTimeBukk.value?.current_power_kw || 0);
+  const bukkPower = Math.abs(realTimeBukk.value?.current_power_kw || 0)
   const halmajPower = realTimeHalmaj.value?.current_power_kw || 0;
   return bukkPower + halmajPower;
 });
 
 
-const formatTime = (timestamp: string | null) => {
+const formatNumber = (value: number | null) => {
+  if (value === null || isNaN(value)) return 'N/A';
+  return value.toLocaleString('hu-HU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+const formatTime = (timestamp: string | null | undefined) => {
   if (!timestamp) return '';
   const date = new Date(timestamp);
-  return date.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
 };
+
 const totalProduction = computed(() => {
   return (productionBukk.value?.production_kwh || 0) + (productionHalmaj.value?.production_kwh || 0);
 });
