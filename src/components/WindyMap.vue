@@ -57,6 +57,7 @@ export default {
         lon: 20.0133,
         zoom: 7,
         container: "clouds",
+        willReadFrequently: true,
         overlay: "clouds",
         onReady: windyAPI => {
           const { map } = windyAPI;

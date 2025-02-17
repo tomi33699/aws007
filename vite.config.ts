@@ -33,5 +33,8 @@ export default defineConfig({
     fs: {
       allow: ['.'] // Fájl elérésének engedélyezése
     }
+  },
+  worker: {
+    format: 'es',
   }
 });
