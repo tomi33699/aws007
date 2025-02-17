@@ -62,8 +62,8 @@
   const series = computed(() => [
     { name: "Összesített Teljesítmény (kW)", data: (props.total1MinData.length ? props.total1MinData : defaultData.value).map(item => parseFloat(item.power_kw.toFixed(2))) },
     { name: "Összesített Besugárzás (W/m²)", data: (props.total1MinData.length ? props.total1MinData : defaultData.value).map(item => parseFloat((item.irrad ?? 0).toFixed(2))) },
-    { name: "Besug forecast (W/m²)", data: (props.interpolatedForecast.length ? props.interpolatedForecast : defaultForecast.value).map(val => parseFloat(val.toFixed(2))) }
-  ]);
+    { name: "Besug forecast (W/m²)", data: (props.interpolatedForecast.length ? props.interpolatedForecast.map(val => parseFloat((val * 2).toFixed(2))) : defaultForecast.value.map(val => parseFloat((val * 2).toFixed(2)))) }
+    ]);
   </script>
 
   <style scoped>
