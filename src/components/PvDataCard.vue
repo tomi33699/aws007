@@ -131,8 +131,7 @@ const totalProduction = computed(() => {
   return (productionBukk.value?.production_kwh || 0) + (productionHalmaj.value?.production_kwh || 0);
 });
 
-
-const fetchData2 = async () => {
+const fetchData = async () => {
   try {
     const { data: realTimeData } = await apiService.getPvRealTimeData();
     realTimeBukk.value = realTimeData.find(item => item.plant.toLowerCase().includes("bukk")) || null;
@@ -172,8 +171,8 @@ const fetchData2 = async () => {
 };
 let interval: string | number | NodeJS.Timeout | undefined;
 onMounted(() => {
-  fetchData2();
-  interval = setInterval(fetchData2, 10000);
+  fetchData();
+  interval = setInterval(fetchData, 10000);
 });
 onUnmounted(() => clearInterval(interval));
 </script>
