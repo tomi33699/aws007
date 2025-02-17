@@ -10,13 +10,13 @@
             <div class="data-item">
               <i class="fas fa-map-marker-alt"></i> Bükkábrány:
               <strong>{{ formatNumber((realTimeBukk?.current_power_kw || 0) * -1) }} kW</strong>  
-              <div class="timestamp">{{ formatTime(realTimeHalmaj?.timestamp) }}</div> 
+              <div class="timestamp">{{ timestampBukk }}</div> 
 
             </div>
             <div class="data-item">
               <i class="fas fa-map-marker-alt"></i> Halmajugra:
               <strong>{{ formatNumber(realTimeHalmaj?.current_power_kw || 0) }} kW</strong>
-              <div class="timestamp">{{ formatTime(realTimeHalmaj?.timestamp) }}</div> 
+              <div class="timestamp">{{ timestampHalmaj }}</div> 
             </div>
             <div class="total-power">
               <i class="fas fa-sun"></i> <strong>{{ formatNumber(totalRealTime) }} kW</strong>
@@ -94,6 +94,9 @@ const productionBukk = ref<PvProductionSummaryData | null>(null);
 const productionHalmaj = ref<PvProductionSummaryData | null>(null);
 const monthlyProductionBukk = ref<number | null>(null);
 const monthlyProductionHalmaj = ref<number | null>(null);
+  const timestampBukk = ref('N/A');
+  const timestampHalmaj = ref('N/A');
+
 
 const hupxAvg = ref<number | null>(null);
 const balancingUp = ref<number | null>(null);
@@ -136,6 +139,9 @@ const fetchData = async () => {
     const { data: realTimeData } = await apiService.getPvRealTimeData();
     realTimeBukk.value = realTimeData.find(item => item.plant.toLowerCase().includes("bukk")) || null;
     realTimeHalmaj.value = realTimeData.find(item => item.plant.toLowerCase().includes("halmaj")) || null;
+    if (realTimeBukk.value) timestampBukk.value = new Date(realTimeBukk.value.timestamp).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    if (realTimeHalmaj.value) timestampHalmaj.value = new Date(realTimeHalmaj.value.timestamp).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
 
     const { data: productionData } = await apiService.getPvProductionSummary();
     productionBukk.value = productionData.find(item => item.plant.toLowerCase().includes("bukk")) || null;
