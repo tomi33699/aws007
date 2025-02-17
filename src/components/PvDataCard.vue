@@ -27,21 +27,21 @@
 
       <!-- Napi termelési adatok -->
       <div class="card">
-        <h3 class="card-title"><i class="fas fa-chart-line icon"></i> Napi Termelés</h3>
-        <div class="card-content">
-          <div class="card-content-row">
-            <div class="data-item">
-              <i class="fas fa-map-marker-alt"></i> Bükkábrány: <strong>{{ formatNumber(productionBukk?.production_kwh || 0) }} MWh</strong>
-            </div>
-            <div class="data-item">
-              <i class="fas fa-map-marker-alt"></i> Halmajugra: <strong>{{ formatNumber(productionHalmaj?.production_kwh || 0) }} MWh</strong>
-            </div>
-            <div class="total-energy">
-              <i class="fas fa-battery-full"></i> <strong>{{ totalProduction }} MWh</strong>
-            </div>
-          </div>
-        </div>
+  <h3 class="card-title"><i class="fas fa-chart-line icon"></i> Napi Termelés</h3>
+  <div class="card-content">
+    <div class="card-content-row">
+      <div class="data-item">
+        <i class="fas fa-map-marker-alt"></i> Bükkábrány: <strong>{{ formatNumber((productionBukk?.production_kwh || 0)/1000, true) }} MWh</strong>
       </div>
+      <div class="data-item">
+        <i class="fas fa-map-marker-alt"></i> Halmajugra: <strong>{{ formatNumber((productionHalmaj?.production_kwh || 0)/1000, true) }} MWh</strong>
+      </div>
+      <div class="total-energy">
+        <i class="fas fa-battery-full"></i> <strong>{{ formatNumber(totalProduction/1000, true) }} MWh</strong>
+      </div>
+    </div>
+  </div>
+</div>
 
       <!-- Havi termelési adatok -->
       <div class="card">
@@ -49,13 +49,13 @@
         <div class="card-content">
           <div class="card-content-row">
             <div class="data-item">
-              <i class="fas fa-map-marker-alt"></i> Bükkábrány: <strong>{{ formatNumber(monthlyProductionBukk) }} kWh</strong>
+              <i class="fas fa-map-marker-alt"></i> Bükkábrány: <strong>{{ formatNumber(monthlyProductionBukk) }} MWh</strong>
             </div>
             <div class="data-item">
-              <i class="fas fa-map-marker-alt"></i> Halmajugra: <strong>{{ formatNumber(monthlyProductionHalmaj) }} kWh</strong>
+              <i class="fas fa-map-marker-alt"></i> Halmajugra: <strong>{{ formatNumber(monthlyProductionHalmaj) }} MWh</strong>
             </div>
             <div class="total-energy">
-              <i class="fas fa-chart-bar"></i> <strong>{{ totalMonthlyProduction }} kWh</strong>
+              <i class="fas fa-chart-bar"></i> <strong>{{ totalMonthlyProduction }} MWh</strong>
             </div>
           </div>
         </div>
@@ -104,16 +104,15 @@ const loading = ref(true);
 
 // Összegzett értékek számítása
 const totalRealTime = computed(() => {
-  const bukkPower = Math.abs(realTimeBukk.value?.current_power_kw || 0)
+  const bukkPower = (realTimeBukk.value?.current_power_kw || 0) * -1;  // Bükkábrány adat a pv_real_time_data-ból
   const halmajPower = realTimeHalmaj.value?.current_power_kw || 0;
   return bukkPower + halmajPower;
-});
-
-
-const formatNumber = (value: number | null) => {
+});const formatNumber = (value: number | null, divideByThousand = false) => {
   if (value === null || isNaN(value)) return 'N/A';
-  return value.toLocaleString('hu-HU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const displayValue = divideByThousand ? value : value;
+  return displayValue.toLocaleString('hu-HU', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 };
+
 const formatTime = (timestamp: string | null | undefined) => {
   if (!timestamp) return '';
   const date = new Date(timestamp);
@@ -123,13 +122,15 @@ const formatTime = (timestamp: string | null | undefined) => {
   return `${hours}:${minutes}:${seconds}`;
 };
 
+const totalMonthlyProduction = computed(() => {
+  const value = (monthlyProductionBukk.value || 0) + (monthlyProductionHalmaj.value || 0);
+  return formatNumber(value, true);  // Csak itt oszt ezerrel
+});
+
 const totalProduction = computed(() => {
   return (productionBukk.value?.production_kwh || 0) + (productionHalmaj.value?.production_kwh || 0);
 });
 
-const totalMonthlyProduction = computed(() => {
-  return (monthlyProductionBukk.value || 0) + (monthlyProductionHalmaj.value || 0);
-});
 
 const fetchData2 = async () => {
   try {
@@ -146,10 +147,10 @@ const fetchData2 = async () => {
     const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
 
     const { data: bukkMonthlyData } = await apiService.getBukkDailyData(year, month);
-    monthlyProductionBukk.value = bukkMonthlyData.reduce((sum, entry) => sum + entry.power_kw, 0);
+    monthlyProductionBukk.value = bukkMonthlyData.reduce((sum, entry) => sum + entry.power_kw/1000, 0);
 
     const { data: halmajMonthlyData } = await apiService.getHalmajDailyData(year, month);
-    monthlyProductionHalmaj.value = halmajMonthlyData.reduce((sum, entry) => sum + entry.power_kw, 0);
+    monthlyProductionHalmaj.value = halmajMonthlyData.reduce((sum, entry) => sum + entry.power_kw/1000, 0);
 
     const currentDate2 = new Date().toISOString().split('T')[0];
 
