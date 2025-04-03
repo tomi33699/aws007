@@ -12,7 +12,7 @@ const menus = ref([
 ]);
 
 const tools = ref([
-  { label: "Menetrend", path: "/buttons", icon: "fa-calendar" },
+  { label: "Menetrend", path: "/menetrend", icon: "fa-calendar" },
 ]);
 
 const plugins = ref([

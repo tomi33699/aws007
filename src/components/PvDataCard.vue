@@ -139,7 +139,7 @@ const fetchData = async () => {
     const { data: realTimeData } = await apiService.getPvRealTimeData();
     realTimeBukk.value = realTimeData.find(item => item.plant.toLowerCase().includes("bukk")) || null;
     realTimeHalmaj.value = realTimeData.find(item => item.plant.toLowerCase().includes("halmaj")) || null;
-    if (realTimeBukk.value) timestampBukk.value = new Date(realTimeBukk.value.timestamp).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    if (realTimeBukk.value) timestampBukk.value = new Date(realTimeBukk.value.timestamp).toLocaleTimeString('ua-en', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     if (realTimeHalmaj.value) timestampHalmaj.value = new Date(realTimeHalmaj.value.timestamp).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
 

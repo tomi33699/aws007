@@ -4,6 +4,7 @@ import DashboardPage from "@/pages/DashboardPage.vue";
 import Market from "@/pages/MarketPage.vue";
 import Weather from "@/pages/Weather.vue";
 import NotFound from "@/pages/NotFound.vue";
+import Menetrend from "@/pages/Menetrend.vue";
 import { fetchAuthSession, signOut } from "aws-amplify/auth"; // ✅ Helyes import AWS Amplify 6.x verzióhoz
 
 const routes: Array<RouteRecordRaw> = [
@@ -24,6 +25,12 @@ const routes: Array<RouteRecordRaw> = [
     path: "/weather",
     name: "Időjárás",
     component: Weather,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/menetrend",
+    name: "Menetrend",
+    component: Menetrend,
     meta: { requiresAuth: true },
   },
   {
