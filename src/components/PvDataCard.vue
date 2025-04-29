@@ -87,16 +87,14 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { apiService } from '@/services/apiService';
 import type { PvRealTimeData, PvProductionSummaryData, PowerData } from '@/types/apiService';
 
-
 const realTimeBukk = ref<PvRealTimeData | null>(null);
 const realTimeHalmaj = ref<PvRealTimeData | null>(null);
 const productionBukk = ref<PvProductionSummaryData | null>(null);
 const productionHalmaj = ref<PvProductionSummaryData | null>(null);
 const monthlyProductionBukk = ref<number | null>(null);
 const monthlyProductionHalmaj = ref<number | null>(null);
-  const timestampBukk = ref('N/A');
-  const timestampHalmaj = ref('N/A');
-
+const timestampBukk = ref('N/A');
+const timestampHalmaj = ref('N/A');
 
 const hupxAvg = ref<number | null>(null);
 const balancingUp = ref<number | null>(null);
@@ -105,29 +103,29 @@ const balancingUpTimestamp = ref<string | null>(null);
 const balancingDownTimestamp = ref<string | null>(null);
 const loading = ref(true);
 
+// ⏰ 2 órás korrekciós segédfüggvény
+const addHoursToTimestamp = (timestamp: string, hours: number) => {
+  const date = new Date(timestamp);
+  date.setHours(date.getHours() + hours);
+  return date.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+};
+
 // Összegzett értékek számítása
 const totalRealTime = computed(() => {
-  const bukkPower = (realTimeBukk.value?.current_power_kw || 0) * -1;  // Bükkábrány adat a pv_real_time_data-ból
+  const bukkPower = (realTimeBukk.value?.current_power_kw || 0) * -1;
   const halmajPower = realTimeHalmaj.value?.current_power_kw || 0;
   return bukkPower + halmajPower;
-});const formatNumber = (value: number | null, divideByThousand = false) => {
+});
+
+const formatNumber = (value: number | null, divideByThousand = false) => {
   if (value === null || isNaN(value)) return 'N/A';
   const displayValue = divideByThousand ? value : value;
   return displayValue.toLocaleString('hu-HU', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 };
 
-const formatTime = (timestamp: string | null | undefined) => {
-  if (!timestamp) return '';
-  const date = new Date(timestamp);
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  const seconds = date.getSeconds().toString().padStart(2, '0');
-  return `${hours}:${minutes}:${seconds}`;
-};
-
 const totalMonthlyProduction = computed(() => {
   const value = (monthlyProductionBukk.value || 0) + (monthlyProductionHalmaj.value || 0);
-  return formatNumber(value, true);  // Csak itt oszt ezerrel
+  return formatNumber(value, true);
 });
 
 const totalProduction = computed(() => {
@@ -139,9 +137,10 @@ const fetchData = async () => {
     const { data: realTimeData } = await apiService.getPvRealTimeData();
     realTimeBukk.value = realTimeData.find(item => item.plant.toLowerCase().includes("bukk")) || null;
     realTimeHalmaj.value = realTimeData.find(item => item.plant.toLowerCase().includes("halmaj")) || null;
-    if (realTimeBukk.value) timestampBukk.value = new Date(realTimeBukk.value.timestamp).toLocaleTimeString('ua-en', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    if (realTimeHalmaj.value) timestampHalmaj.value = new Date(realTimeHalmaj.value.timestamp).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
+    // ✅ időkorrekció 2 órával
+    if (realTimeBukk.value) timestampBukk.value = addHoursToTimestamp(realTimeBukk.value.timestamp, 2);
+    if (realTimeHalmaj.value) timestampHalmaj.value = addHoursToTimestamp(realTimeHalmaj.value.timestamp, 2);
 
     const { data: productionData } = await apiService.getPvProductionSummary();
     productionBukk.value = productionData.find(item => item.plant.toLowerCase().includes("bukk")) || null;
@@ -152,13 +151,12 @@ const fetchData = async () => {
     const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
 
     const { data: bukkMonthlyData } = await apiService.getBukkDailyData(year, month);
-    monthlyProductionBukk.value = bukkMonthlyData.reduce((sum, entry) => sum + entry.power_kw/1000, 0);
+    monthlyProductionBukk.value = bukkMonthlyData.reduce((sum, entry) => sum + entry.power_kw / 1000, 0);
 
     const { data: halmajMonthlyData } = await apiService.getHalmajDailyData(year, month);
-    monthlyProductionHalmaj.value = halmajMonthlyData.reduce((sum, entry) => sum + entry.power_kw/1000, 0);
+    monthlyProductionHalmaj.value = halmajMonthlyData.reduce((sum, entry) => sum + entry.power_kw / 1000, 0);
 
     const currentDate2 = new Date().toISOString().split('T')[0];
-
     const { avg: hupxAvgPrice } = await apiService.getHUPXData(currentDate2);
     hupxAvg.value = hupxAvgPrice ?? null;
 
@@ -167,6 +165,7 @@ const fetchData = async () => {
     balancingDown.value = lastBalancing?.down_price ?? null;
     balancingUpTimestamp.value = lastBalancing?.timestamp ?? null;
     balancingDownTimestamp.value = lastBalancing?.timestamp ?? null;
+
   } catch (error) {
     console.error("🚨 Hiba történt az adatok lekérésekor:", error);
   } finally {
@@ -175,6 +174,107 @@ const fetchData = async () => {
     }, 300);
   }
 };
+
+let interval: string | number | NodeJS.Timeout | undefined;
+onMounted(() => {
+  fetchData();
+  interval = setInterval(fetchData, 10000);
+});
+onUnmounted(() => clearInterval(interval));
+</script>
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { apiService } from '@/services/apiService';
+import type { PvRealTimeData, PvProductionSummaryData, PowerData } from '@/types/apiService';
+
+const realTimeBukk = ref<PvRealTimeData | null>(null);
+const realTimeHalmaj = ref<PvRealTimeData | null>(null);
+const productionBukk = ref<PvProductionSummaryData | null>(null);
+const productionHalmaj = ref<PvProductionSummaryData | null>(null);
+const monthlyProductionBukk = ref<number | null>(null);
+const monthlyProductionHalmaj = ref<number | null>(null);
+const timestampBukk = ref('N/A');
+const timestampHalmaj = ref('N/A');
+
+const hupxAvg = ref<number | null>(null);
+const balancingUp = ref<number | null>(null);
+const balancingDown = ref<number | null>(null);
+const balancingUpTimestamp = ref<string | null>(null);
+const balancingDownTimestamp = ref<string | null>(null);
+const loading = ref(true);
+
+// ⏰ 2 órás korrekciós segédfüggvény
+const addHoursToTimestamp = (timestamp: string, hours: number) => {
+  const date = new Date(timestamp);
+  date.setHours(date.getHours() + hours);
+  return date.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+};
+
+// Összegzett értékek számítása
+const totalRealTime = computed(() => {
+  const bukkPower = (realTimeBukk.value?.current_power_kw || 0) * -1;
+  const halmajPower = realTimeHalmaj.value?.current_power_kw || 0;
+  return bukkPower + halmajPower;
+});
+
+const formatNumber = (value: number | null, divideByThousand = false) => {
+  if (value === null || isNaN(value)) return 'N/A';
+  const displayValue = divideByThousand ? value : value;
+  return displayValue.toLocaleString('hu-HU', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+};
+
+const totalMonthlyProduction = computed(() => {
+  const value = (monthlyProductionBukk.value || 0) + (monthlyProductionHalmaj.value || 0);
+  return formatNumber(value, true);
+});
+
+const totalProduction = computed(() => {
+  return (productionBukk.value?.production_kwh || 0) + (productionHalmaj.value?.production_kwh || 0);
+});
+
+const fetchData = async () => {
+  try {
+    const { data: realTimeData } = await apiService.getPvRealTimeData();
+    realTimeBukk.value = realTimeData.find(item => item.plant.toLowerCase().includes("bukk")) || null;
+    realTimeHalmaj.value = realTimeData.find(item => item.plant.toLowerCase().includes("halmaj")) || null;
+
+    // ✅ időkorrekció 2 órával
+    if (realTimeBukk.value) timestampBukk.value = addHoursToTimestamp(realTimeBukk.value.timestamp, 2);
+    if (realTimeHalmaj.value) timestampHalmaj.value = addHoursToTimestamp(realTimeHalmaj.value.timestamp, 2);
+
+    const { data: productionData } = await apiService.getPvProductionSummary();
+    productionBukk.value = productionData.find(item => item.plant.toLowerCase().includes("bukk")) || null;
+    productionHalmaj.value = productionData.find(item => item.plant.toLowerCase().includes("halmaj")) || null;
+
+    const currentDate = new Date();
+    const year = currentDate.getFullYear().toString();
+    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+
+    const { data: bukkMonthlyData } = await apiService.getBukkDailyData(year, month);
+    monthlyProductionBukk.value = bukkMonthlyData.reduce((sum, entry) => sum + entry.power_kw / 1000, 0);
+
+    const { data: halmajMonthlyData } = await apiService.getHalmajDailyData(year, month);
+    monthlyProductionHalmaj.value = halmajMonthlyData.reduce((sum, entry) => sum + entry.power_kw / 1000, 0);
+
+    const currentDate2 = new Date().toISOString().split('T')[0];
+    const { avg: hupxAvgPrice } = await apiService.getHUPXData(currentDate2);
+    hupxAvg.value = hupxAvgPrice ?? null;
+
+    const { lastData: lastBalancing } = await apiService.getBalancingActivatedPrice(currentDate2);
+    balancingUp.value = lastBalancing?.up_price ?? null;
+    balancingDown.value = lastBalancing?.down_price ?? null;
+    balancingUpTimestamp.value = lastBalancing?.timestamp ?? null;
+    balancingDownTimestamp.value = lastBalancing?.timestamp ?? null;
+
+  } catch (error) {
+    console.error("🚨 Hiba történt az adatok lekérésekor:", error);
+  } finally {
+    setTimeout(() => {
+      loading.value = false;
+    }, 300);
+  }
+};
+
 let interval: string | number | NodeJS.Timeout | undefined;
 onMounted(() => {
   fetchData();
