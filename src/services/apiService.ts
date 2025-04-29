@@ -44,7 +44,7 @@ export const apiService = {
     const response = await memoizedApiCall(`${API_BASE_URL}/forecast_data`, { date });
     const shiftedData = response.map((item: ForecastData) => ({
       ...item,
-      timestamp: new Date(new Date(item.timestamp).getTime() + 1 * 60 * 60 * 1000).toISOString(),
+      timestamp: new Date(new Date(item.timestamp).getTime() + 2 * 60 * 60 * 1000).toISOString(),
     }));
     return { data: shiftedData, lastData: shiftedData.length > 0 ? shiftedData[shiftedData.length - 1] : undefined };
   },
