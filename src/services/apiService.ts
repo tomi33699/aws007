@@ -1,5 +1,6 @@
 import axios from "axios";
 import type {
+  AfrrData,
   BalancingPriceData,
   BalancingVolumeData,
   ForecastData,
@@ -194,4 +195,26 @@ export const apiService = {
         : undefined,
     };
   },
+
+ // apiService.ts
+async getAfrrData(date: string): Promise<{ data: AfrrData[] }> {
+  const response = await axios.get(`${API_BASE_URL}/afrr_data`, {
+    params: { date },
+  });
+
+  const transformedData = response.data
+    .map((item: any) => ({
+      szab_time: item.szab_time,
+      pmax: item.pmax ?? 0,
+      pelvi: item.pelvi ?? 0,
+      pmin: item.pmin ?? 0,
+      szab_status: item.szab_status ?? 'N/A', // 💥 EZ HIÁNYZOTT
+    }))
+    .sort(
+      (a: any, b: any) => new Date(a.szab_time).getTime() - new Date(b.szab_time).getTime()
+    ); // ⏳ idő szerint növekvő sorrend
+
+  return { data: transformedData };
+}
+
 };

@@ -18,6 +18,7 @@
           <BukkChart :bukk1MinData="bukk1MinData.length ? bukk1MinData : defaultData" />
           <HalmajChart :halmaj1MinData="halmaj1MinData.length ? halmaj1MinData : defaultData" />
         </div>
+        <AfrrChart />
         <DailyProductionChart />
       </div>
     </div>
@@ -37,6 +38,7 @@ import BukkChart from '@/components/BukkChart.vue';
 import HalmajChart from '@/components/HalmajChart.vue';
 import DailyProductionChart from '@/components/DailyProductionChart.vue';
 import Loader from '@/components/Loader.vue';
+import AfrrChart from '@/components/AfrrChart.vue';
 
 const date = ref(new Date().toISOString().split('T')[0]);
 const total1MinData = ref<PowerData[]>([]);

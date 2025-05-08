@@ -46,3 +46,11 @@ export interface PvProductionSummaryData {
   plant: string;
   production_kwh: number;
 }
+
+export interface AfrrData {
+  szab_time: string;
+  pmax: number;
+  pelvi: number;
+  pmin: number;
+  szab_status: string
+}
