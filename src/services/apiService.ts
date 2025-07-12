@@ -137,31 +137,37 @@ export const apiService = {
     return { data: transformedData };
   },
   
-  async getBukkDailyData(year: string, month: string): Promise<{ data: PowerData[] }> {
-    const response = await axios.get(`${API_BASE_URL}/bukk_daily_data`, {
-      params: { year, month },
-    });
+async getBukkDailyData(year: string, month: string): Promise<{ data: PowerData[] }> {
+  const response = await axios.get(`${API_BASE_URL}/bukk_daily_data`, {
+    params: { year, month },
+  });
 
-
-    const transformedData = response.data.map((item: any) => ({
+  const transformedData = response.data
+    .filter((item: any) => !isNaN(item.daily_powerp_kwh)) // kiszűrjük a NaN értékeket
+    .map((item: any) => ({
       timestamp: item.date,
       power_kw: item.daily_powerp_kwh ?? 0,
     }));
 
-    return { data: transformedData };
-  },
+  return { data: transformedData };
+}
+,
 
-  async getHalmajDailyData(year: string, month: string): Promise<{ data: PowerData[] }> {
-    const response = await axios.get(`${API_BASE_URL}/halmaj_daily_data`, {
-      params: { year, month },
-    });
-    const transformedData = response.data.map((item: any) => ({
+async getHalmajDailyData(year: string, month: string): Promise<{ data: PowerData[] }> {
+  const response = await axios.get(`${API_BASE_URL}/halmaj_daily_data`, {
+    params: { year, month },
+  });
+
+  const transformedData = response.data
+    .filter((item: any) => !isNaN(item.daily_powerp_kwh)) // kiszűrjük a NaN értékeket
+    .map((item: any) => ({
       timestamp: item.date,
       power_kw: item.daily_powerp_kwh ?? 0,
     }));
 
-    return { data: transformedData };
-  },
+  return { data: transformedData };
+}
+,
 
 
   
@@ -216,41 +222,48 @@ async getAfrrData(date: string): Promise<{ data: AfrrData[] }> {
 
   return { data: transformedData };
 },
-
-// Új API: /afrrexport_data
-async getAfrrexportData(date: string): Promise<{ data: AfrrData[] }> {
+async getAfrrexportData(date: string): Promise<{
+  data: {
+    timestamp: string;
+    hazai_fel: number;
+    hazai_le: number;
+    igcc_fel: number;
+    igcc_le: number;
+  }[];
+}> {
   const response = await axios.get(`${API_BASE_URL}/afrrexport_data`, {
     params: { date },
   });
 
-  const transformedData = response.data
-    .map((item: any) => ({
-      szab_time: item.szab_time,
-      pmax: item.pmax ?? 0,
-      pelvi: item.pelvi ?? 0,
-      pmin: item.pmin ?? 0,
-      szab_status: item.szab_status ?? 'N/A',
-    }))
-    .sort((a: any, b: any) => new Date(a.szab_time).getTime() - new Date(b.szab_time).getTime());
+  const transformedData = response.data.map((item: any) => ({
+    timestamp: item["Időpont"],
+    hazai_fel: item["Hazai aFRR (aut.) szab. FEL (15p)"] ?? 0,
+    hazai_le: item["Hazai aFRR (aut.) szab. LE (15p)"] ?? 0,
+    igcc_fel: item["IGCC szabályozás FEL (15p)"] ?? 0,
+    igcc_le: item["IGCC szabályozás LE (15p)"] ?? 0,
+  }));
 
   return { data: transformedData };
-},
-
-// Új API: /verexport_data
-async getVerexportData(date: string): Promise<{ data: AfrrData[] }> {
+}
+,
+async getVerexportData(date: string): Promise<{
+  data: {
+    timestamp: string;
+    brutto_teny: number;
+    brutto_terv: number;
+    brutto_dayahead: number;
+  }[];
+}> {
   const response = await axios.get(`${API_BASE_URL}/verexport_data`, {
     params: { date },
   });
 
-  const transformedData = response.data
-    .map((item: any) => ({
-      szab_time: item.szab_time,
-      pmax: item.pmax ?? 0,
-      pelvi: item.pelvi ?? 0,
-      pmin: item.pmin ?? 0,
-      szab_status: item.szab_status ?? 'N/A',
-    }))
-    .sort((a: any, b: any) => new Date(a.szab_time).getTime() - new Date(b.szab_time).getTime());
+  const transformedData = response.data.map((item: any) => ({
+    timestamp: item["Időpont"],
+    brutto_teny: item["Bruttó tény rendszerterhelés"] ?? 0,
+    brutto_terv: item["Bruttó terv rendszerterhelés"] ?? 0,
+    brutto_dayahead: item["Bruttó rendszerterhelés becslés (dayahead)"] ?? 0,
+  }));
 
   return { data: transformedData };
 }

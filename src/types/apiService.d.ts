@@ -55,3 +55,4 @@ export interface AfrrData {
   szab_status: string;
 }
 
+
