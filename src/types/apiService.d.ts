@@ -52,5 +52,6 @@ export interface AfrrData {
   pmax: number;
   pelvi: number;
   pmin: number;
-  szab_status: string
+  szab_status: string;
 }
+

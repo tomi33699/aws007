@@ -215,6 +215,45 @@ async getAfrrData(date: string): Promise<{ data: AfrrData[] }> {
     ); // ⏳ idő szerint növekvő sorrend
 
   return { data: transformedData };
+},
+
+// Új API: /afrrexport_data
+async getAfrrexportData(date: string): Promise<{ data: AfrrData[] }> {
+  const response = await axios.get(`${API_BASE_URL}/afrrexport_data`, {
+    params: { date },
+  });
+
+  const transformedData = response.data
+    .map((item: any) => ({
+      szab_time: item.szab_time,
+      pmax: item.pmax ?? 0,
+      pelvi: item.pelvi ?? 0,
+      pmin: item.pmin ?? 0,
+      szab_status: item.szab_status ?? 'N/A',
+    }))
+    .sort((a: any, b: any) => new Date(a.szab_time).getTime() - new Date(b.szab_time).getTime());
+
+  return { data: transformedData };
+},
+
+// Új API: /verexport_data
+async getVerexportData(date: string): Promise<{ data: AfrrData[] }> {
+  const response = await axios.get(`${API_BASE_URL}/verexport_data`, {
+    params: { date },
+  });
+
+  const transformedData = response.data
+    .map((item: any) => ({
+      szab_time: item.szab_time,
+      pmax: item.pmax ?? 0,
+      pelvi: item.pelvi ?? 0,
+      pmin: item.pmin ?? 0,
+      szab_status: item.szab_status ?? 'N/A',
+    }))
+    .sort((a: any, b: any) => new Date(a.szab_time).getTime() - new Date(b.szab_time).getTime());
+
+  return { data: transformedData };
 }
+
 
 };
