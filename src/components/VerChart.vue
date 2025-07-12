@@ -1,27 +1,27 @@
 <template>
   <div>
     <!-- Kártyák -->
-    <div class="cards">
+    <div class="cards" v-if="last">
       <div class="card">
         <div class="icon"><i class="fas fa-bolt"></i></div>
         <div class="title">Tény</div>
-        <div class="value">{{ last?.teny.toFixed(2) }} MW</div>
-        <div class="time">{{ last?.time }}</div>
+        <div class="value">{{ last.teny.toFixed(2) }} MW</div>
+        <div class="time">{{ last.time }}</div>
       </div>
       <div class="card">
         <div class="icon"><i class="fas fa-chart-line"></i></div>
         <div class="title">Terv</div>
-        <div class="value">{{ last?.terv.toFixed(2) }} MW</div>
-        <div class="delta" :class="getClass(last?.terv - last?.teny)">
-          Eltérés: {{ formatDelta(last?.terv - last?.teny) }}
+        <div class="value">{{ last.terv.toFixed(2) }} MW</div>
+        <div class="delta" :class="getClass(last.terv - last.teny)">
+          Eltérés: {{ formatDelta(last.terv - last.teny) }}
         </div>
       </div>
       <div class="card">
         <div class="icon"><i class="fas fa-pen"></i></div>
         <div class="title">Becslés</div>
-        <div class="value">{{ last?.becsles.toFixed(2) }} MW</div>
-        <div class="delta" :class="getClass(last?.becsles - last?.teny)">
-          Eltérés: {{ formatDelta(last?.becsles - last?.teny) }}
+        <div class="value">{{ last.becsles.toFixed(2) }} MW</div>
+        <div class="delta" :class="getClass(last.becsles - last.teny)">
+          Eltérés: {{ formatDelta(last.becsles - last.teny) }}
         </div>
       </div>
     </div>
@@ -36,6 +36,7 @@
     />
   </div>
 </template>
+
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
