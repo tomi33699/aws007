@@ -28,22 +28,27 @@ const fetchAfrrData = async () => {
 onMounted(fetchAfrrData);
 watch(selectedDate, fetchAfrrData);
 
+// 🔽 Csak az utolsó 200 adat
+const last200 = computed(() => afrrData.value.slice(-90));
+
 const chartOptions = computed(() => ({
   chart: {
     type: 'line',
-    zoom: { enabled: false }, // 🔍 Zoom kikapcsolva
+    zoom: { enabled: false },
     toolbar: { show: true }
   },
   xaxis: {
-  categories: afrrData.value.map(item =>
-    new Date(item.szab_time).toLocaleTimeString('hu-HU', {
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  ),
-  title: { text: 'Idő (óra:perc)' },
-  labels: { rotate: -45 },
-},
+    categories: last200.value.map(item =>
+      new Date(item.szab_time).toLocaleTimeString('hu-HU', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    ),
+    title: { text: 'Idő (óra:perc)' },
+    labels: { rotate: -45 },
+      tickAmount: 10, // 👉 kb. minden 9. felirat jelenik meg
+
+  },
   yaxis: {
     title: { text: 'Teljesítmény (MW)' }
   },
@@ -53,9 +58,9 @@ const chartOptions = computed(() => ({
   },
   stroke: {
     curve: 'smooth',
-    width: [1.5, 2.5, 1.5], // 🟥 pmax/pmin vékonyabb, 🟩 pelvi vastagabb
+    width: [1.5, 2.5, 1.5],
   },
-  colors: ['#ff0000', '#22c55e', '#ff0000'], // pmax - piros, pelvi - zöld, pmin - piros
+  colors: ['#ff0000', '#22c55e', '#ff0000'],
   legend: {
     position: 'top',
   },
@@ -64,22 +69,22 @@ const chartOptions = computed(() => ({
 const series = computed(() => [
   {
     name: 'Pmax',
-    data: afrrData.value.map(item => item.pmax),
+    data: last200.value.map(item => item.pmax),
   },
   {
     name: 'Pelvi',
-    data: afrrData.value.map(item => item.pelvi),
+    data: last200.value.map(item => item.pelvi),
   },
   {
     name: 'Pmin',
-    data: afrrData.value.map(item => item.pmin),
+    data: last200.value.map(item => item.pmin),
   },
 ]);
 </script>
 
 <template>
   <div class="afrr-chart-container">
-      <h2 class="text-center">📉 aFRR Teljesítmény adatok</h2>
+    <h2 class="text-center">📉 aFRR Teljesítmény adatok</h2>
     <div class="status-card">
       <p><strong>🕒 Utolsó szabályozási idő:</strong> {{ latestStatus.szab_time }}</p>
       <p><strong>📘 Szabályozási státusz:</strong> {{ latestStatus.szab_status }}</p>
@@ -107,7 +112,7 @@ const series = computed(() => [
   justify-content: space-around;
 }
 
-.status-card p{
-    margin-bottom: 0;
+.status-card p {
+  margin-bottom: 0;
 }
 </style>

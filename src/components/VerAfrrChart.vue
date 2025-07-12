@@ -1,5 +1,35 @@
 <template>
   <div>
+    <!-- Kártyák: utolsó nem nulla értékek -->
+    <div class="status-card">
+      <div class="card-item">
+        <div class="icon"><i class="fas fa-arrow-up"></i></div>
+        <div class="title">Hazai fel</div>
+        <div class="value">{{ last?.hazai_fel ?? 'N/A' }} MW</div>
+      </div>
+      <div class="card-item">
+        <div class="icon"><i class="fas fa-arrow-down"></i></div>
+        <div class="title">Hazai le</div>
+        <div class="value">{{ last?.hazai_le ?? 'N/A' }} MW</div>
+      </div>
+      <div class="card-item">
+        <div class="icon"><i class="fas fa-exchange-alt"></i></div>
+        <div class="title">IGCC fel</div>
+        <div class="value">{{ last?.igcc_fel ?? 'N/A' }} MW</div>
+      </div>
+      <div class="card-item">
+        <div class="icon"><i class="fas fa-compress-arrows-alt"></i></div>
+        <div class="title">IGCC le</div>
+        <div class="value">{{ last?.igcc_le ?? 'N/A' }} MW</div>
+      </div>
+      <div class="card-item">
+        <div class="icon"><i class="fas fa-clock"></i></div>
+        <div class="title">Időpont</div>
+        <div class="value">{{ last?.time ?? 'N/A' }}</div>
+      </div>
+    </div>
+
+    <!-- Chart -->
     <VueApexCharts
       type="bar"
       :options="chartOptions"
@@ -16,6 +46,7 @@ import VueApexCharts from 'vue3-apexcharts';
 import { apiService } from '@/services/apiService';
 
 const chartRef = ref<any>(null);
+
 const rawData = ref<{
   timestamp: string;
   hazai_fel: number;
@@ -24,18 +55,49 @@ const rawData = ref<{
   igcc_le: number;
 }[]>([]);
 
+const last = ref<{
+  time: string;
+  hazai_fel: number;
+  hazai_le: number;
+  igcc_fel: number;
+  igcc_le: number;
+} | null>(null);
+
 const date = new Date().toISOString().slice(0, 10);
 
 onMounted(async () => {
   const response = await apiService.getAfrrexportData(date);
   rawData.value = response.data;
+
+  if (rawData.value.length) {
+    const reversed = [...rawData.value].reverse();
+    const nonZero = reversed.find(item =>
+      item.hazai_fel !== 0 ||
+      item.hazai_le !== 0 ||
+      item.igcc_fel !== 0 ||
+      item.igcc_le !== 0
+    );
+
+    if (nonZero) {
+      last.value = {
+        time: new Date(nonZero.timestamp).toLocaleTimeString('hu-HU', {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        hazai_fel: nonZero.hazai_fel,
+        hazai_le: nonZero.hazai_le,
+        igcc_fel: nonZero.igcc_fel,
+        igcc_le: nonZero.igcc_le,
+      };
+    }
+  }
 });
 
 const categories = computed(() =>
   rawData.value.map(item =>
     new Date(item.timestamp).toLocaleTimeString('hu-HU', {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     })
   )
 );
@@ -66,7 +128,6 @@ const chartOptions = computed(() => ({
       fontWeight: 'bold'
     },
     formatter: (val: number, opts: any) => {
-      // Csak a hazai sorozatoknál jelenítjük meg (index 0, 1)
       return opts.seriesIndex < 2 && val !== 0 ? val.toFixed(2) : '';
     }
   },
@@ -75,6 +136,9 @@ const chartOptions = computed(() => ({
     labels: {
       rotate: -45
     }
+    ,
+      tickAmount: 15, // 👉 kb. minden 9. felirat jelenik meg
+
   },
   yaxis: {
     title: { text: 'Teljesítmény (MW)' }
@@ -112,8 +176,35 @@ const series = computed(() => [
 </script>
 
 <style scoped>
-.chart-container {
-  width: 100%;
-  height: 400px;
+.status-card {
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  text-align: center;
+}
+
+.card-item {
+  flex: 1 1 150px;
+}
+
+.icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.title {
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+
+.value {
+  font-size: 1.1rem;
+  font-weight: bold;
 }
 </style>

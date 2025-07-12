@@ -98,20 +98,34 @@ const chartOptions = computed(() => ({
   annotations: {
     xaxis: annotations.value,
   },
-  stroke: { width: [1.2, 1.2, 1.2], curve: "smooth" },
+  stroke: { width: [4, 2, 2], curve: "smooth" },
   xaxis: {
-    categories: chartData.value.map(d =>
-      d.timestamp.toLocaleTimeString("hu-HU", { hour: "2-digit", minute: "2-digit" })
-    ),
+    categories: chartData.value.map((d, i) =>
+  i % 5 === 0
+    ? d.timestamp.toLocaleTimeString("hu-HU", { hour: "2-digit", minute: "2-digit" })
+    : ""
+),
+
     title: { text: "Idő" },
   },
   yaxis: {
     title: { text: "MW" },
+    tickAmount: 6,
   },
-  tooltip: {
-    y: { formatter: (val: number) => `${val.toFixed(2)} MW` }
-  },
-  colors: ["#2563eb", "#f97316", "#22c55e"],
+  grid: {
+      show: true,
+      strokeDashArray: 4,
+      xaxis: { lines: { show: true } },
+      yaxis: { lines: { show: true } },
+    },
+    tooltip: {
+      y: { formatter: (val: number) => `${val.toFixed(2)} MW` }
+    },
+    colors: ["#2563eb", "#f97316", "#22c55e"],
+    legend: {
+      position: 'top',
+      horizontalAlign: 'center'
+    }
 }));
 
 const series = computed(() => [
