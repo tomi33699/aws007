@@ -34,7 +34,7 @@
       type="bar"
       :options="chartOptions"
       :series="series"
-      height="400"
+      :height="chartHeight"
       ref="chartRef"
     />
   </div>
@@ -46,6 +46,10 @@ import VueApexCharts from 'vue3-apexcharts';
 import { apiService } from '@/services/apiService';
 
 const chartRef = ref<any>(null);
+const chartHeight = computed(() => {
+  return window.innerWidth <= 768 ? 600 : 800; // 📱 mobilon: 600, desktopon: 800
+});
+
 
 const rawData = ref<{
   timestamp: string;

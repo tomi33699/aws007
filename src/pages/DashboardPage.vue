@@ -20,6 +20,7 @@
         </div>
         <VerAfrrChart />
         <VerChart />
+        <GasEngineStatus />
         <AfrrChart />
         <DailyProductionChart />
       </div>
@@ -43,6 +44,7 @@ import Loader from '@/components/Loader.vue';
 import AfrrChart from '@/components/AfrrChart.vue';
 import VerAfrrChart from '@/components/VerAfrrChart.vue';
 import VerChart from '@/components/VerChart.vue';
+import GasEngineStatus from '@/components/GasEngineStatus.vue';
 
 const date = ref(new Date().toISOString().split('T')[0]);
 const total1MinData = ref<PowerData[]>([]);

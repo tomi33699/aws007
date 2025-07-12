@@ -224,6 +224,8 @@ async getAfrrData(date: string): Promise<{ data: AfrrData[] }> {
 },
 async getAfrrexportData(date: string): Promise<{
   data: {
+    brutto_dayahead: number;
+    brutto_teny: number;
     timestamp: string;
     hazai_fel: number;
     hazai_le: number;
